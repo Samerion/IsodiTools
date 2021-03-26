@@ -6,11 +6,12 @@ import isodi.tools.tabs;
 import isodi.tools.themes;
 
 /// Create the UI.
-GluiFrame createUI() {
+GluiFrame createUI(ref Tabs tabs) {
 
-    Tabs tabs;
+    GluiFrame mainSpace;
 
-    return vframe(
+    // Prepare the UI
+    auto result = vframe(
         emptyTheme,
         layout(1, NodeAlign.fill),
 
@@ -18,13 +19,18 @@ GluiFrame createUI() {
         tabs.getUI,
 
         // Main space
-        hframe(
+        mainSpace = hframe(
+            layout(1, NodeAlign.fill),
 
             // Left sidebar
-
+            vframe(),
         ),
 
-
     );
+
+    // Save pointers
+    tabs.paletteFrame = cast(GluiFrame*) &mainSpace.children[0];
+
+    return result;
 
 }

@@ -2,7 +2,12 @@ module isodi.tools.main;
 
 import raylib;
 
+import isodi.raylib.bind;
+
 import isodi.tools.ui;
+import isodi.tools.tabs;
+import isodi.tools.project;
+import isodi.tools.open_file;
 
 void main() {
 
@@ -16,10 +21,18 @@ void main() {
     scope (exit) CloseWindow();
 
     // Create the UI
-    auto ui = createUI();
+    Tabs tabs;
+    auto ui = createUI(tabs);
+
+    // Create the first project
+    tabs.addProject(new Project);
 
     // Run the editor
     while (!WindowShouldClose) {
+
+        // We're asserting there's always a project, since we can't open or close them now
+        // In the future, a new project should be created in this case.
+        assert(tabs.projects.length, "No projects open, somehow");
 
         // Begin drawing the frame
         BeginDrawing();
@@ -27,6 +40,9 @@ void main() {
 
         // Clear the background
         ClearBackground(Colors.BLACK);
+
+        // Read dropped files
+        forwardDroppedFiles(tabs.openProject);
 
         // Draw the UI
         ui.draw();
