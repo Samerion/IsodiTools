@@ -1,0 +1,13 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"ddmp": "0.0.1-0.dev.3",
+		"fluent-asserts": "0.13.3",
+		"glui": "0.1.0",
+		"isodi": "0.1.0",
+		"libdparse": "0.14.0",
+		"raylib-d": "3.0.3",
+		"rcjson": "1.0.0-alpha.3",
+		"stdx-allocator": "2.77.5"
+	}
+}

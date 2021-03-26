@@ -1,0 +1,15 @@
+{
+	"authors": [
+		"Soaku"
+	],
+	"copyright": "Copyright © 2021, Soaku",
+	"dependencies": {
+		"glui": "~>0.1.0",
+		"isodi": "*"
+	},
+	"description": "Resource editor for Isodi",
+	"license": "GPL-3.0",
+	"name": "isodi-tools",
+	"targetPath": "build",
+	"targetType": "executable"
+}
