@@ -2,6 +2,8 @@
 module isodi.tools.project.packs;
 
 import std.array;
+import std.typecons;
+import std.algorithm;
 
 import glui;
 import isodi.pack;
@@ -19,8 +21,14 @@ struct Packs {
 
         Project project;
 
-        // Frames
+        // Tab contents
         GluiFrame packsFrame, tilesFrame, skeletonsFrame;
+
+        // Current tab
+        GluiFrame openTabFrame;
+
+        // Hint for the current palette
+        GluiLabel hintLabel;
 
     }
 
@@ -30,15 +38,16 @@ struct Packs {
 
         this.project = project;
 
+        // Make the frame
         rootFrame = vframe(
             theme,
             layout(0, NodeAlign.start, NodeAlign.fill),
 
             // Tab switcher
             hframe(
-                label("Packs"),
-                label("Tiles"),
-                label("Skeletons"),
+                button("Packs", () => switchTab(packsFrame)),
+                button("Tiles", () => switchTab(tilesFrame)),
+                button("Skeletons", () => switchTab(skeletonsFrame)),
             ),
 
             // Content
@@ -46,47 +55,59 @@ struct Packs {
             tilesFrame = vframe(),
             skeletonsFrame = vframe(),
 
+            // Hint
+            hintLabel = label(),
+
         );
 
-        //packsFrame.hide();
+        // Set the active tabs
+        openTabFrame = packsFrame;
         tilesFrame.hide();
         skeletonsFrame.hide();
 
     }
 
-    /// Load a new pack to the project.
+    /// Switch to a different tab.
+    void switchTab(GluiFrame newTab) {
+
+        openTabFrame.hide();
+        openTabFrame = newTab;
+        newTab.show();
+        newTab.updateSize();
+
+    }
+
+    /// Load new packs to the project.
     /// Params:
-    ///     path = Path to the `pack.json` file of the pack.
-    ///     index = Index to insert the pack at. If outside of array boundaries, inserts at the end.
-    void addPack(string path, size_t index = -1) {
+    ///     paths = Array of paths to `pack.json` files of added packs.
+    ///     index = Index to insert the packs on. If outside of array boundaries, inserts at the end.
+    void addPack(size_t index, string[] paths...) {
 
         auto packList = project.display.packs;
 
-        // Load the pack
-        auto pack = getPack(path);
-        auto node = label(pack.name);
+        // Load the packs and create nodes to represent each
+        auto packs = paths.map!getPack.array;
+        auto nodes = packs.map!(a => label(a.name));
+
+        // Limit index
+        index = min(index, packList.length);
 
         // Append
-        if (index >= packList.length) {
-
-            packList ~= pack;
-            packsFrame ~= node;
-
-        }
-
-        // Insert
-        else {
-
-            packList.insertInPlace(index, pack);
-            packsFrame.children.insertInPlace(index, node);
-
-        }
+        packList.insertInPlace(index, packs);
+        packsFrame.children.insertInPlace(index, nodes);
 
         // Clear cache
         packList.clearCache();
 
         // Resize the tree
         packsFrame.updateSize();
+
+    }
+
+    /// Ditto
+    void addPack(string[] paths...) {
+
+        addPack(-1, paths);
 
     }
 
