@@ -1,5 +1,6 @@
 module isodi.tools.main;
 
+import glui;
 import raylib;
 
 import isodi.raylib.bind;
@@ -38,11 +39,17 @@ void main() {
         BeginDrawing();
         scope (exit) EndDrawing();
 
+        // Set the mouse cursor
+        SetMouseCursor(MouseCursor.MOUSE_CURSOR_DEFAULT);
+
         // Clear the background
         ClearBackground(Colors.BLACK);
 
         // Read dropped files
         forwardDroppedFiles(tabs.openProject);
+
+        // Draw the active display
+        tabs.openProject.display.draw();
 
         // Draw the UI
         ui.draw();

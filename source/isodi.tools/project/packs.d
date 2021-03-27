@@ -6,6 +6,9 @@ import std.typecons;
 import std.algorithm;
 
 import glui;
+import raylib;
+
+import isodi;
 import isodi.pack;
 
 import isodi.tools.themes;
@@ -96,6 +99,27 @@ struct Packs {
         packList.insertInPlace(index, packs);
         packsFrame.children.insertInPlace(index, nodes);
 
+        reload();
+
+    }
+
+    /// Ditto
+    void addPack(string[] paths...) {
+
+        addPack(-1, paths);
+
+    }
+
+    /// Reload the packs and update the UI.
+    private void reload() {
+
+        auto packList = project.display.packs;
+
+        // Add tiles
+        tilesFrame.children = cast(GluiNode[]) packList.listCells[]
+            .map!(type => button(type, () => setCellBrush(type)))
+            .array;
+
         // Clear cache
         packList.clearCache();
 
@@ -104,10 +128,16 @@ struct Packs {
 
     }
 
-    /// Ditto
-    void addPack(string[] paths...) {
+    /// Assign a new cell for brush.
+    private void setCellBrush(string cellType) {
 
-        addPack(-1, paths);
+        import isodi.raylib.cell : RaylibCell;
+
+        /// Create the brush
+        auto cell = new RaylibCell(project.display, Position(), cellType);
+        cell.color = Color(0xcc, 0xaa, 0xff, 0xee);
+
+        project.brush = cell;
 
     }
 
