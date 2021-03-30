@@ -1,5 +1,8 @@
 module isodi.tools.project;
 
+import raylib;
+import std.traits;
+
 import isodi;
 import isodi.object3d;
 import isodi.raylib.anchor;
@@ -26,6 +29,9 @@ class Project {
     /// Pack manager.
     Packs packs;
 
+    /// Height of the brush in Raylib.
+    float brushHeight = 0;
+
     private {
 
         /// Current brush object.
@@ -39,7 +45,19 @@ class Project {
     this() {
 
         display = new RaylibDisplay;
-        display.camera.follow = display.addAnchor({ });
+        display.camera.follow = display.addAnchor({
+
+            rlPushMatrix();
+            scope (exit) rlPopMatrix();
+
+            // Move to camera
+            const campos = display.snapWorldPosition(display.raylibCamera.position);
+            rlTranslatef(campos.x, brushHeight * display.cellSize, campos.z);
+
+            // Draw the grid
+            DrawGrid(10, display.cellSize);
+
+        });
 
         _brushAnchor = cast(RaylibAnchor) display.addAnchor({ });
 
@@ -55,7 +73,26 @@ class Project {
     if (is(typeof(&obj.draw) : void delegate())) {
 
         _brush = obj;
-        _brushAnchor.callback = &obj.draw;
+        _brushAnchor.callback = {
+
+            // Get mouse position in the world
+            auto mouseHit = GetCollisionRayGround(display.mouseRay(false), brushHeight);
+
+            // Didn't hit, retry inverted
+            if (!mouseHit.hit) mouseHit = GetCollisionRayGround(display.mouseRay(true), brushHeight);
+
+            const position = display.isodiPosition(mouseHit.position);
+
+            // The object supports offset (assuming constant position)
+            static if (hasMember!(T, "offset")) obj.offset = position;
+
+            // It doesn't (assuming dynamic position)
+            else obj.position = position;
+
+            // Draw the object
+            obj.draw();
+
+        };
 
     }
 
@@ -64,6 +101,13 @@ class Project {
     inout(Object3D) brush() inout {
 
         return _brush;
+
+    }
+
+    /// Paint a single object to the project using the current brush.
+    void paint() {
+
+        // TODO
 
     }
 

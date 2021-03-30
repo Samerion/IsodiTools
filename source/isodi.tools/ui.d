@@ -24,6 +24,12 @@ GluiFrame createUI(ref Tabs tabs) {
 
             // Left sidebar
             vframe(),
+
+            // Main space
+            frameButton(
+                layout(1, NodeAlign.fill),
+                () => tabs.openProject.paint(),
+            ),
         ),
 
     );

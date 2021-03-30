@@ -4,13 +4,14 @@ import glui;
 import raylib;
 
 import isodi.raylib.bind;
+import isodi.raylib.camera;
 
 import isodi.tools.ui;
 import isodi.tools.tabs;
 import isodi.tools.project;
 import isodi.tools.open_file;
 
-void main() {
+void main(string[] argv) {
 
     // Prepare the window
     SetTraceLogLevel(TraceLogType.LOG_WARNING);
@@ -21,12 +22,38 @@ void main() {
     SetExitKey(0);
     scope (exit) CloseWindow();
 
+    // Create camera keybinds
+    const CameraKeybindings keybinds = {
+
+        zoomIn:  KeyboardKey.KEY_EQUAL,
+        zoomOut: KeyboardKey.KEY_MINUS,
+
+        rotateLeft:  KeyboardKey.KEY_Q,
+        rotateRight: KeyboardKey.KEY_E,
+        rotateUp:    KeyboardKey.KEY_R,
+        rotateDown:  KeyboardKey.KEY_F,
+
+        moveLeft:  KeyboardKey.KEY_A,
+        moveRight: KeyboardKey.KEY_D,
+        moveDown:  KeyboardKey.KEY_S,
+        moveUp:    KeyboardKey.KEY_W,
+        moveBelow: KeyboardKey.KEY_PAGE_DOWN,
+        moveAbove: KeyboardKey.KEY_PAGE_UP,
+
+    };
+
     // Create the UI
     Tabs tabs;
     auto ui = createUI(tabs);
 
     // Create the first project
     tabs.addProject(new Project);
+
+    foreach (arg; argv) {
+
+        forwardFile(tabs.openProject, arg);
+
+    }
 
     // Run the editor
     while (!WindowShouldClose) {
@@ -49,6 +76,7 @@ void main() {
         forwardDroppedFiles(tabs.openProject);
 
         // Draw the active display
+        tabs.openProject.display.camera.updateCamera(keybinds);
         tabs.openProject.display.draw();
 
         // Draw the UI
