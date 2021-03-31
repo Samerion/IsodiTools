@@ -8,11 +8,7 @@ import isodi.object3d;
 import isodi.raylib.anchor;
 import isodi.raylib.display;
 
-public {
-
-    import isodi.tools.project.packs;
-
-}
+import isodi.tools.packs;
 
 /// Represents an open project.
 class Project {

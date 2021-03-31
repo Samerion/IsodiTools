@@ -1,5 +1,5 @@
 ///
-module isodi.tools.project.packs;
+module isodi.tools.packs;
 
 import std.array;
 import std.typecons;
