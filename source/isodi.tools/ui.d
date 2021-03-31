@@ -26,6 +26,9 @@ GluiFrame createUI(ref Tabs tabs) {
             vframe(),
 
             // Main space
+            // TODO: make a custom button to support filling by dragging
+            // while the mouse is down, it should expand the preview cells and only apply them when up; 2nd mouse
+            // button or Esc should cancel the operation.
             frameButton(
                 layout(1, NodeAlign.fill),
                 () => tabs.openProject.paint(),

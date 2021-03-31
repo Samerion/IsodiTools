@@ -89,6 +89,9 @@ class Project {
             // It doesn't (assuming dynamic position)
             else obj.position = position;
 
+            // Also update the anchor position
+            _brushAnchor.position = position;
+
             // Draw the object
             obj.draw();
 
@@ -107,7 +110,16 @@ class Project {
     /// Paint a single object to the project using the current brush.
     void paint() {
 
-        // TODO
+        // Ignore if there is no brush
+        if (!_brush) return;
+
+        // Painting cells
+        if (auto cell = cast(Cell) _brush) {
+
+            display.addCell(cell.visualPosition, cell.type);
+
+        }
+
 
     }
 
