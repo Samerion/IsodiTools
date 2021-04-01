@@ -66,14 +66,14 @@ void main(string[] argv) {
         BeginDrawing();
         scope (exit) EndDrawing();
 
+        // Read dropped files
+        forwardDroppedFiles(tabs.openProject);
+
         // Set the mouse cursor
         SetMouseCursor(MouseCursor.MOUSE_CURSOR_DEFAULT);
 
         // Clear the background
         ClearBackground(Colors.BLACK);
-
-        // Read dropped files
-        forwardDroppedFiles(tabs.openProject);
 
         // Draw the active display
         tabs.openProject.display.camera.updateCamera(keybinds);

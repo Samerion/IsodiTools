@@ -48,6 +48,7 @@ struct Tabs {
 
         // Update the frames
         *paletteFrame = project.packs.rootFrame;
+        paletteFrame.updateSize();
 
         // Set the project
         openProject = project;

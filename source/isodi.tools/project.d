@@ -36,6 +36,10 @@ class Project {
         /// Anchor holding the brush.
         RaylibAnchor _brushAnchor;
 
+        /// If true, painting is locked until the brush changes. Used to prevent repeatedly applying the same paint
+        /// over and over.
+        bool paintLocked;
+
     }
 
     this() {
@@ -68,6 +72,7 @@ class Project {
     void brush(T : Object3D)(T obj)
     if (is(typeof(&obj.draw) : void delegate())) {
 
+        paintLocked = false;
         _brush = obj;
         _brushAnchor.callback = {
 
@@ -77,7 +82,9 @@ class Project {
             // Didn't hit, retry inverted
             if (!mouseHit.hit) mouseHit = GetCollisionRayGround(display.mouseRay(true), brushHeight);
 
+            // Get the position
             const position = display.isodiPosition(mouseHit.position);
+
 
             // The object supports offset (assuming constant position)
             static if (hasMember!(T, "offset")) obj.offset = position;
@@ -85,7 +92,16 @@ class Project {
             // It doesn't (assuming dynamic position)
             else obj.position = position;
 
-            // Also update the anchor position
+
+            // If the position changed
+            if (_brushAnchor.position != position) {
+
+                // Unlock the brush
+                paintLocked = false;
+
+            }
+
+            // Update the anchor position
             _brushAnchor.position = position;
 
             // Draw the object
@@ -103,19 +119,35 @@ class Project {
 
     }
 
-    /// Paint a single object to the project using the current brush.
-    void paint() {
+    /// Take input and update brush status, assuming the project space is hovered/active.
+    void updateBrush() {
 
         // Ignore if there is no brush
         if (!_brush) return;
 
+        // Ignore if not holding left button down
+        if (!IsMouseButtonDown(MouseButton.MOUSE_LEFT_BUTTON)) return;
+
+        // Ignore if painting is locked
+        if (paintLocked) return;
+
+        // Lock the paint
+        paintLocked = true;
+
+        // Paint
+        paint(brush.visualPosition);
+
+    }
+
+    /// Paint the current brush at set position
+    protected void paint(Position position) {
+
         // Painting cells
         if (auto cell = cast(Cell) _brush) {
 
-            display.addCell(cell.visualPosition, cell.type);
+            display.addCell(position, cell.type);
 
         }
-
 
     }
 
