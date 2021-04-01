@@ -125,17 +125,29 @@ class Project {
         // Ignore if there is no brush
         if (!_brush) return;
 
-        // Ignore if not holding left button down
-        if (!IsMouseButtonDown(MouseButton.MOUSE_LEFT_BUTTON)) return;
+        // RMB: erase
+        if (IsMouseButtonDown(MouseButton.MOUSE_RIGHT_BUTTON)) {
 
-        // Ignore if painting is locked
-        if (paintLocked) return;
+            erase(brush.visualPosition);
 
-        // Lock the paint
-        paintLocked = true;
+        }
 
-        // Paint
-        paint(brush.visualPosition);
+        // LMB: paint
+        else {
+
+            // Ignore if not holding left button down
+            if (!IsMouseButtonDown(MouseButton.MOUSE_LEFT_BUTTON)) return;
+
+            // Ignore if painting is locked
+            if (paintLocked) return;
+
+            // Lock the paint
+            paintLocked = true;
+
+            // Paint
+            paint(brush.visualPosition);
+
+        }
 
     }
 
@@ -146,6 +158,18 @@ class Project {
         if (auto cell = cast(Cell) _brush) {
 
             display.addCell(position, cell.type);
+
+        }
+
+    }
+
+    /// Erase objects matching brush type.
+    protected void erase(Position position) {
+
+        // Cells
+        if (cast(Cell) _brush) {
+
+            display.removeCell(position.toUnique);
 
         }
 
