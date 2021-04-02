@@ -1,6 +1,8 @@
 module isodi.tools.project;
 
 import raylib;
+
+import std.math;
 import std.traits;
 
 import isodi;
@@ -25,8 +27,11 @@ class Project {
     /// Pack manager.
     Packs packs;
 
-    /// Height of the brush in Raylib.
+    /// Height of the brush in Isodi (1 = tile size).
     float brushHeight = 0;
+
+    /// Height to snap new cells to.
+    float heightSnap = 0.1;
 
     private {
 
@@ -44,7 +49,10 @@ class Project {
 
     this() {
 
+        import isodi.camera : Camera;
+
         display = new RaylibDisplay;
+        display.camera.offset = Camera.Offset(0, 0, 0);
         display.camera.follow = display.addAnchor({
 
             rlPushMatrix();
@@ -55,7 +63,7 @@ class Project {
             rlTranslatef(campos.x, brushHeight * display.cellSize, campos.z);
 
             // Draw the grid
-            DrawGrid(10, display.cellSize);
+            //DrawGrid(10, display.cellSize);
 
         });
 
@@ -76,14 +84,11 @@ class Project {
         _brush = obj;
         _brushAnchor.callback = {
 
-            // Get mouse position in the world
-            auto mouseHit = GetCollisionRayGround(display.mouseRay(false), brushHeight);
+            // Update height
+            brushHeight = round(display.camera.offset.height / heightSnap) * heightSnap;
 
-            // Didn't hit, retry inverted
-            if (!mouseHit.hit) mouseHit = GetCollisionRayGround(display.mouseRay(true), brushHeight);
-
-            // Get the position
-            const position = display.isodiPosition(mouseHit.position);
+            // Get the brush position
+            auto position = brushPosition;
 
 
             // The object supports offset (assuming constant position)
@@ -172,6 +177,21 @@ class Project {
             display.removeCell(position.toUnique);
 
         }
+
+    }
+
+    /// Get the position of the brush.
+    protected Position brushPosition() const {
+
+        const groundHeight = brushHeight * display.cellSize;
+
+        // Get mouse position in the world
+        auto mouseHit = GetCollisionRayGround(display.mouseRay(false), groundHeight);
+
+        // Didn't hit, retry inverted
+        if (!mouseHit.hit) mouseHit = GetCollisionRayGround(display.mouseRay(true), groundHeight);
+
+        return display.isodiPosition(mouseHit.position);
 
     }
 

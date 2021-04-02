@@ -8,6 +8,7 @@ import isodi.raylib.camera;
 
 import isodi.tools.ui;
 import isodi.tools.tabs;
+import isodi.tools.input;
 import isodi.tools.project;
 import isodi.tools.open_file;
 
@@ -30,15 +31,15 @@ void main(string[] argv) {
 
         rotateLeft:  KeyboardKey.KEY_Q,
         rotateRight: KeyboardKey.KEY_E,
-        rotateUp:    KeyboardKey.KEY_R,
-        rotateDown:  KeyboardKey.KEY_F,
+        rotateUp:    KeyboardKey.KEY_T,
+        rotateDown:  KeyboardKey.KEY_G,
 
         moveLeft:  KeyboardKey.KEY_A,
         moveRight: KeyboardKey.KEY_D,
         moveDown:  KeyboardKey.KEY_S,
         moveUp:    KeyboardKey.KEY_W,
-        moveBelow: KeyboardKey.KEY_PAGE_DOWN,
-        moveAbove: KeyboardKey.KEY_PAGE_UP,
+        //moveAbove: KeyboardKey.KEY_R,  // implemented manually
+        //moveBelow: KeyboardKey.KEY_F,
 
     };
 
@@ -66,14 +67,14 @@ void main(string[] argv) {
         BeginDrawing();
         scope (exit) EndDrawing();
 
-        // Read dropped files
-        forwardDroppedFiles(tabs.openProject);
-
         // Set the mouse cursor
         SetMouseCursor(MouseCursor.MOUSE_CURSOR_DEFAULT);
 
         // Clear the background
         ClearBackground(Colors.BLACK);
+
+        // Process general input
+        processInput(ui, tabs);
 
         // Draw the active display
         tabs.openProject.display.camera.updateCamera(keybinds);
