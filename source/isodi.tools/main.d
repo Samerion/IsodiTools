@@ -9,6 +9,7 @@ import isodi.raylib.camera;
 import isodi.tools.ui;
 import isodi.tools.tabs;
 import isodi.tools.input;
+import isodi.tools.themes;
 import isodi.tools.project;
 import isodi.tools.open_file;
 
@@ -42,6 +43,9 @@ void main(string[] argv) {
         //moveBelow: KeyboardKey.KEY_F,
 
     };
+
+    // Load themes
+    loadThemes();
 
     // Create the UI
     Tabs tabs;

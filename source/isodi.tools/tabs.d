@@ -11,8 +11,20 @@ public import std.typecons : Flag, Yes, No;
 /// This struct manages all tabs and open projects within a window.
 struct Tabs {
 
-    /// UI for the tabs.
-    private GluiFrame tabFrame;
+    private struct Frames {
+
+        private GluiFrame tabsRoot;
+
+        /// UI for the tabs.
+        private GluiFrame tabs;
+
+        /// Frame for the palette/left sidebar.
+        GluiFrame* palette;
+
+        /// Frame for object management.
+        GluiFrame* objects;
+
+    }
 
     /// All open projects.
     Project[] projects;
@@ -20,22 +32,22 @@ struct Tabs {
     /// Currently open/focused project.
     Project openProject;
 
-    // (no docs) Frame for the palette/left sidebar.
-    GluiFrame* paletteFrame;
+    /// Special frames shared across projects.
+    Frames frames;
 
     /// Get the UI.
     GluiFrame getUI() {
 
         // Exists, return it.
-        if (tabFrame) return tabFrame;
+        if (frames.tabsRoot) return frames.tabsRoot;
 
         // Root
-        return hframe(
+        return frames.tabsRoot = hframe(
             theme,
             layout(NodeAlign.fill),
 
             // Tab list
-            tabFrame = hframe(),
+            frames.tabs = hframe(),
 
             // New tab
             label("+"),
@@ -47,8 +59,8 @@ struct Tabs {
     void switchTo(Project project) {
 
         // Update the frames
-        *paletteFrame = project.packs.rootFrame;
-        paletteFrame.updateSize();
+        *frames.palette = project.packs.rootFrame;
+        frames.palette.updateSize();
 
         // Set the project
         openProject = project;
@@ -59,7 +71,7 @@ struct Tabs {
     void addProject(Project project, Flag!"switchAfter" switchAfter = Yes.switchAfter) {
 
         projects ~= project;
-        tabFrame ~= label(project.filename ? project.filename : "New project");
+        frames.tabs ~= label(project.filename ? project.filename : "New project");
 
         // Switch to the project
         if (switchAfter) switchTo(project);

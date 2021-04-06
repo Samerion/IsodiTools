@@ -8,10 +8,13 @@ Theme theme;
 /// Theme applied to the root node only so there is an empty space.
 Theme emptyTheme;
 
+/// Theme applied to tooltips — white text on a half-transparent black background.
+Theme tooltipTheme;
+
 /// Theme for debugging stuff.
 debug Theme debugTheme;
 
-static this() {
+void loadThemes() {
 
     theme = [
 
@@ -26,6 +29,22 @@ static this() {
     emptyTheme = [
 
         &GluiFrame.styleKey: style!q{ },
+
+    ];
+
+    tooltipTheme = [
+
+        &GluiFrame.styleKey: style!q{
+
+            backgroundColor = Color(0, 0, 0, 0xaa);
+
+        },
+
+        &GluiLabel.styleKey: style!q{
+
+            textColor = Color(0xff, 0xff, 0xff, 0xff);
+
+        },
 
     ];
 

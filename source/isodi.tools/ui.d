@@ -9,6 +9,7 @@ import isodi.tools.themes;
 GluiFrame createUI(ref Tabs tabs) {
 
     GluiFrame mainSpace;
+    GluiLabel statusRight;
 
     // Prepare the UI
     auto result = vframe(
@@ -29,16 +30,48 @@ GluiFrame createUI(ref Tabs tabs) {
             // TODO: make a custom button to support filling by dragging
             // while the mouse is down, it should expand the preview cells and only apply them when up; 2nd mouse
             // button or Esc should cancel the operation.
-            hoverButton(
+            frameHoverButton(
                 layout(1, NodeAlign.fill),
-                () => tabs.openProject.updateBrush(),
+
+                hframe(
+                    layout(1, NodeAlign.end),
+                    tooltipTheme,
+
+                    statusRight = label(
+                        layout(NodeAlign.end)
+                    ),
+                ),
+
+                () {
+
+                    import std.format : format;
+
+                    // Update the brush
+                    tabs.openProject.updateBrush();
+                    const brush = tabs.openProject.brush;
+
+                    // If there isn't one, stop
+                    if (brush is null) return;
+
+                    // Update the status bar
+                    const position = brush.visualPosition;
+                    statusRight.text = format!"(%s, %s, %s)"(position.x, position.y, position.height.top);
+                    statusRight.updateSize();
+                    // Glui note: unnecessary traversal of the whole tree, since the parent doesn't shrink
+
+                },
             ),
+
+            // Right sidebar
+            vframe(),
+
         ),
 
     );
 
     // Save pointers
-    tabs.paletteFrame = cast(GluiFrame*) &mainSpace.children[0];
+    tabs.frames.palette = cast(GluiFrame*) &mainSpace.children[0];
+    tabs.frames.objects = cast(GluiFrame*) &mainSpace.children[2];
 
     return result;
 
