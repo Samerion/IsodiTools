@@ -44,7 +44,7 @@ struct Packs {
         // Make the frame
         rootFrame = vframe(
             theme,
-            layout(0, NodeAlign.start, NodeAlign.fill),
+            layout(NodeAlign.start, NodeAlign.fill),
 
             // Tab switcher
             hframe(

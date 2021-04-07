@@ -11,6 +11,7 @@ import isodi.raylib.anchor;
 import isodi.raylib.display;
 
 import isodi.tools.packs;
+import isodi.tools.objects;
 
 /// Represents an open project.
 class Project {
@@ -26,6 +27,9 @@ class Project {
 
     /// Pack manager.
     Packs packs;
+
+    /// Object manager.
+    Objects objects;
 
     /// Height of the brush in Isodi (1 = tile size).
     float brushHeight = 0;
@@ -70,6 +74,7 @@ class Project {
         _brushAnchor = cast(RaylibAnchor) display.addAnchor({ });
 
         packs = Packs(this);
+        objects = Objects(this);
 
     }
 

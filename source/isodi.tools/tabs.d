@@ -60,6 +60,7 @@ struct Tabs {
 
         // Update the frames
         *frames.palette = project.packs.rootFrame;
+        *frames.objects = project.objects.rootFrame;
         frames.palette.updateSize();
 
         // Set the project

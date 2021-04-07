@@ -11,6 +11,9 @@ Theme emptyTheme;
 /// Theme applied to tooltips — white text on a half-transparent black background.
 Theme tooltipTheme;
 
+/// Theme for dropdowns and context menus, eg. in the object manager.
+Theme dropdownTheme;
+
 /// Theme for debugging stuff.
 debug Theme debugTheme;
 
@@ -43,6 +46,22 @@ void loadThemes() {
         &GluiLabel.styleKey: style!q{
 
             textColor = Color(0xff, 0xff, 0xff, 0xff);
+
+        },
+
+    ];
+
+    dropdownTheme = [
+
+        &GluiFrame.styleKey: style!q{
+
+            backgroundColor = Color(0xcc, 0xcc, 0xcc, 0xff);
+
+        },
+
+        &GluiLabel.styleKey: style!q{
+
+            textColor = Color(0x00, 0x00, 0x00, 0xff);
 
         },
 
