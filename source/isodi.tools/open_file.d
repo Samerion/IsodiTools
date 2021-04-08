@@ -7,6 +7,8 @@ import std.string;
 
 import raylib;
 
+import isodi.tilemap;
+
 import isodi.tools.project;
 
 /// Read dropped files if any and forward them further.
@@ -59,6 +61,21 @@ void forwardFile(Project project, string path) {
         project.packs.addPack(path);
 
         project.status.text = format!"Added pack %s"(path);
+
+    }
+
+    // Case 3: tilemap file
+    else if (path.isFile && path.extension == ".isodi") {
+
+        // TODO add onto a new layer
+        auto file = cast(ubyte[]) read(path);
+        project.display.loadTilemap(file);
+
+    }
+
+    else {
+
+        project.status.text = format!"Unknown file type %s"(path.extension);
 
     }
 
