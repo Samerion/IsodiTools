@@ -8,7 +8,7 @@ import isodi.tools.themes;
 /// Create the UI.
 GluiFrame createUI(ref Tabs tabs) {
 
-    GluiFrame mainSpace;
+    GluiFrame mainSpace, statusBar;
     GluiLabel statusRight;
 
     // Prepare the UI
@@ -23,7 +23,7 @@ GluiFrame createUI(ref Tabs tabs) {
         mainSpace = hframe(
             layout(1, NodeAlign.fill),
 
-            // Left sidebar
+            // Left sidebar (placeholder)
             vframe(),
 
             // Main space
@@ -33,12 +33,14 @@ GluiFrame createUI(ref Tabs tabs) {
             frameHoverButton(
                 layout(1, NodeAlign.fill),
 
-                hframe(
-                    layout(1, NodeAlign.end),
+                statusBar = hframe(
+                    layout(1, NodeAlign.fill, NodeAlign.end),
                     tooltipTheme,
 
+                    label(),  // (placeholder)
+
                     statusRight = label(
-                        layout(NodeAlign.end)
+                        layout(1, NodeAlign.end)
                     ),
                 ),
 
@@ -62,7 +64,7 @@ GluiFrame createUI(ref Tabs tabs) {
                 },
             ),
 
-            // Right sidebar
+            // Right sidebar (placeholder)
             vframe(),
 
         ),
@@ -72,6 +74,8 @@ GluiFrame createUI(ref Tabs tabs) {
     // Save pointers
     tabs.frames.palette = cast(GluiFrame*) &mainSpace.children[0];
     tabs.frames.objects = cast(GluiFrame*) &mainSpace.children[2];
+
+    tabs.frames.status  = cast(GluiLabel*) &statusBar.children[0];
 
     return result;
 

@@ -24,6 +24,9 @@ struct Tabs {
         /// Frame for object management.
         GluiFrame* objects;
 
+        /// Status label
+        GluiLabel* status;
+
     }
 
     /// All open projects.
@@ -60,6 +63,8 @@ struct Tabs {
 
         // Update the frames
         *frames.palette = project.packs.rootFrame;
+        *frames.objects = project.objects.rootFrame;
+        *frames.status = project.status;
         frames.palette.updateSize();
 
         // Set the project
@@ -70,8 +75,12 @@ struct Tabs {
     /// Add a project to the list
     void addProject(Project project, Flag!"switchAfter" switchAfter = Yes.switchAfter) {
 
+        import std.path : baseName;
+
         projects ~= project;
-        frames.tabs ~= label(project.filename ? project.filename : "New project");
+        frames.tabs ~= label(project.filename ? project.filename.baseName : "project");
+
+        // todo: double click to rename file
 
         // Switch to the project
         if (switchAfter) switchTo(project);
