@@ -1,5 +1,6 @@
 module isodi.tools.project;
 
+import glui;
 import raylib;
 
 import std.math;
@@ -30,6 +31,11 @@ class Project {
 
     /// Object manager.
     Objects objects;
+
+    /// Status label for the project.
+    GluiLabel status;
+    // TODO custom label to erase own text after 3 seconds
+    // or maybe, a better idea, a TickTimer node in glui to handle timing
 
     /// Height of the brush in Isodi (1 = tile size).
     float brushHeight = 0;
@@ -75,6 +81,7 @@ class Project {
 
         packs = Packs(this);
         objects = Objects(this);
+        status = label();
 
     }
 

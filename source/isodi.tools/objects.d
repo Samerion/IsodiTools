@@ -2,6 +2,13 @@ module isodi.tools.objects;
 
 import glui;
 
+import std.path;
+import std.array;
+import std.format;
+import fs = std.file;
+
+import isodi.tilemap;
+
 import isodi.tools.themes;
 import isodi.tools.project;
 
@@ -35,7 +42,35 @@ struct Objects {
         );
 
         auto projectNode = addNode("Project",
-            "Export tilemap", () { },
+
+            "Export tilemap", () {
+
+                // temporary: later use a file picker
+
+                // Check if the project has a filename
+                if (!project.filename.length) {
+
+                    project.status.text = "Drop a folder into the window to pick a save location and retry";
+                    project.status.updateSize();
+                    return;
+
+                }
+
+                const path = project.filename.setExtension("isodi");
+
+                // Write to a buffer
+                auto appn = appender!(ubyte[]);
+                project.display.saveTilemap(appn);
+
+                // Save the data
+                fs.write(path, appn[]);
+
+                // Add a status text
+                project.status.text = format!"Saved to %s"(path);
+                project.status.updateSize();
+
+            },
+
             //"Normalize tilemap", () { },
         );
 
