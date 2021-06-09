@@ -37,6 +37,9 @@ class Project {
     // TODO custom label to erase own text after 3 seconds
     // or maybe, a better idea, a TickTimer node in glui to handle timing
 
+    /// Radius of the area to be filled with given paint.
+    uint brushSize = 1;
+
     /// Height of the brush in Isodi (1 = tile size).
     float brushHeight = 0;
 
@@ -108,14 +111,6 @@ class Project {
             auto position = brushPosition;
             position.height.depth = brushDepth;
 
-
-            // The object supports offset (assuming constant position)
-            static if (hasMember!(T, "offset")) obj.offset = position;
-
-            // It doesn't (assuming dynamic position)
-            else obj.position = position;
-
-
             // If the position changed
             if (_brushAnchor.position != position) {
 
@@ -124,11 +119,28 @@ class Project {
 
             }
 
-            // Update the anchor position
-            _brushAnchor.position = position;
+            void setPosition(Position pos) {
 
-            // Draw the object
-            obj.draw();
+                // The object supports offset (assuming constant position)
+                static if (hasMember!(T, "offset")) obj.offset = pos;
+
+                // It doesn't (assuming dynamic position)
+                else obj.position = pos;
+
+                // Update anchor position
+                _brushAnchor.position = position;
+
+            }
+
+            foreach (pos; CircleIterator(position, brushSize - 1)) {
+
+                // Draw the object
+                setPosition(pos);
+                obj.draw();
+
+            }
+
+            setPosition(position);
 
         };
 
@@ -148,10 +160,12 @@ class Project {
         // Ignore if there is no brush
         if (!_brush) return;
 
+        const iterator = CircleIterator(_brushAnchor.position, brushSize - 1);
+
         // RMB: erase
         if (IsMouseButtonDown(MouseButton.MOUSE_RIGHT_BUTTON)) {
 
-            erase(brush.visualPosition);
+            foreach (pos; iterator) erase(pos);
 
         }
 
@@ -168,7 +182,7 @@ class Project {
             paintLocked = true;
 
             // Paint
-            paint(brush.visualPosition);
+            foreach (pos; iterator) paint(pos);
 
         }
 
@@ -218,5 +232,58 @@ class Project {
     // Animation playback instructions for movies.
     // TODO
     // auto animationPlan;
+
+}
+
+private struct CircleIterator {
+
+    Position from, to, middle;
+    uint radius;
+
+    this(Position middle, uint radius) {
+
+        this.middle = middle;
+        this.radius = radius;
+
+        from = middle;
+        from.x -= radius;
+        from.y -= radius;
+
+        to = middle;
+        to.x += radius;
+        to.y += radius;
+
+    }
+
+    // iterate on a square filtered to a circle, consider midpoint circle algorithm in the future
+    int opApply(scope int delegate(Position) dg) const {
+
+        auto now = from;
+        auto rad2 = radius*radius;
+
+        Position pos = from;
+        for (pos.y = from.y; pos.y <= to.y; pos.y++)
+        for (pos.x = from.x; pos.x <= to.x; pos.x++) {
+
+            const distance = (pos.x - middle.x)^^2 + (pos.y - middle.y)^^2;
+
+            // Point out of circle, ignore it
+            if (distance > rad2) {
+
+                // Won't draw anything in this row
+                if (pos.x > middle.x) break;
+                continue;
+
+            }
+
+            // Found a point, call the delegate
+            auto result = dg(pos);
+            if (result) return result;
+
+        }
+
+        return 0;
+
+    }
 
 }

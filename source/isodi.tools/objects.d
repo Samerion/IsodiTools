@@ -1,6 +1,7 @@
 module isodi.tools.objects;
 
 import glui;
+import raylib;
 
 import std.path;
 import std.array;
@@ -21,7 +22,7 @@ struct Objects {
     private {
 
         Project project;
-        GluiFrame objectList;
+        GluiFrame objectList, toolOptions;
 
     }
 
@@ -31,15 +32,39 @@ struct Objects {
 
         this.project = project;
 
+        GluiTextInput brushSizeInput;
+
         // Make the frame
         rootFrame = vframe(
             theme,
             layout(NodeAlign.end, NodeAlign.fill),
 
             // Object list
-            objectList = vframe(),
+            objectList = vframe(
+                layout(1),
+            ),
+
+            // Tool options
+            toolOptions = vframe(
+                hframe(
+                    label("Brush size:"),
+                    brushSizeInput = textInput("", () {
+
+                        import std.conv : to, ConvException;
+                        try project.brushSize = brushSizeInput.value.to!uint;
+
+                        // Failed, ignore
+                        catch (ConvException) { }
+
+                    }),
+                )
+            ),
+
 
         );
+
+        brushSizeInput.size = Vector2(25, 0);
+        brushSizeInput.value = "1";
 
         auto projectNode = addNode("Project",
 
