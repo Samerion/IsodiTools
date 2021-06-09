@@ -40,6 +40,9 @@ class Project {
     /// Height of the brush in Isodi (1 = tile size).
     float brushHeight = 0;
 
+    /// Depth of the brush in Isodi.
+    float brushDepth = 1;
+
     /// Height to snap new cells to.
     float heightSnap = 0.1;
 
@@ -90,7 +93,9 @@ class Project {
     ///     obj = Object to use. Must be casted to a class from the Raylib binds to work properly.
     @property
     void brush(T : Object3D)(T obj)
-    if (is(typeof(&obj.draw) : void delegate())) {
+    if (is(typeof(&obj.draw) : void delegate()))
+    in(obj.position.height.depth == 0, "Brush object must be flat (depth=0).")
+    do {
 
         paintLocked = false;
         _brush = obj;
@@ -101,6 +106,7 @@ class Project {
 
             // Get the brush position
             auto position = brushPosition;
+            position.height.depth = brushDepth;
 
 
             // The object supports offset (assuming constant position)
@@ -203,7 +209,9 @@ class Project {
         // Didn't hit, retry inverted
         if (!mouseHit.hit) mouseHit = GetCollisionRayGround(display.mouseRay(true), groundHeight);
 
-        return display.isodiPosition(mouseHit.position);
+        auto position = display.isodiPosition(mouseHit.position);
+        position.height.depth = 0;
+        return position;
 
     }
 
