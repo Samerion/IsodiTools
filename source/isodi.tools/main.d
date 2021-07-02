@@ -24,30 +24,10 @@ void main(string[] argv) {
     SetExitKey(0);
     scope (exit) CloseWindow();
 
-    // Create camera keybinds
-    const CameraKeybindings keybinds = {
-
-        zoomIn:  KeyboardKey.KEY_EQUAL,
-        zoomOut: KeyboardKey.KEY_MINUS,
-
-        rotateLeft:  KeyboardKey.KEY_Q,
-        rotateRight: KeyboardKey.KEY_E,
-        rotateUp:    KeyboardKey.KEY_T,
-        rotateDown:  KeyboardKey.KEY_G,
-
-        moveLeft:  KeyboardKey.KEY_A,
-        moveRight: KeyboardKey.KEY_D,
-        moveDown:  KeyboardKey.KEY_S,
-        moveUp:    KeyboardKey.KEY_W,
-        //moveAbove: KeyboardKey.KEY_R,  // implemented manually
-        //moveBelow: KeyboardKey.KEY_F,
-
-    };
-
     // Load themes
     loadThemes();
 
-    // Create the UI
+    // Prepare tabs
     Tabs tabs;
     auto ui = createUI(tabs);
 
