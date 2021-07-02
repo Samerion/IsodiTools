@@ -36,10 +36,11 @@ CameraKeybindings keybinds = {
 /// Process miscellaneous input.
 void processInput(GluiNode uiRoot, ref Tabs tabs) {
 
-    const holdingShift = IsKeyDown(KeyboardKey.KEY_LEFT_SHIFT);
-
     auto project = tabs.openProject;
     auto camera = &project.display.camera;
+
+    const holdingShift = IsKeyDown(KeyboardKey.KEY_LEFT_SHIFT);
+    const changeDepth = !project.lockDepth || holdingShift;
 
     // Get dropped files
     forwardDroppedFiles(project);
@@ -58,7 +59,7 @@ void processInput(GluiNode uiRoot, ref Tabs tabs) {
             case 'r', 'R':
 
                 if (!holdingShift) camera.offset.height += project.heightSnap;
-                project.brushDepth += project.heightSnap;
+                if (changeDepth)   project.brushDepth   += project.heightSnap;
 
                 break;
 
@@ -67,7 +68,7 @@ void processInput(GluiNode uiRoot, ref Tabs tabs) {
             case 'f', 'F':
 
                 if (!holdingShift) camera.offset.height -= project.heightSnap;
-                project.brushDepth = max(0, project.brushDepth - project.heightSnap);
+                if (changeDepth)   project.brushDepth    = max(0, project.brushDepth - project.heightSnap);
 
                 break;
 

@@ -43,6 +43,9 @@ class Project {
     /// Height of the brush in Isodi (1 = tile size).
     float brushHeight = 0;
 
+    /// Lock the depth, preventing it to change with height.
+    bool lockDepth;
+
     /// Depth of the brush in Isodi.
     float brushDepth = 1;
 

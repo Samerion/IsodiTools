@@ -3,6 +3,7 @@ module isodi.tools.objects;
 import glui;
 import raylib;
 
+import std.conv;
 import std.path;
 import std.array;
 import std.format;
@@ -33,6 +34,7 @@ struct Objects {
         this.project = project;
 
         GluiTextInput brushSizeInput;
+        GluiButton!GluiLabel depthLockInput;
 
         // Make the frame
         rootFrame = vframe(
@@ -46,18 +48,29 @@ struct Objects {
 
             // Tool options
             toolOptions = vframe(
+
+                // Toggle depth locking
+                depthLockInput = button("Lock depth", () {
+
+                    project.lockDepth = !project.lockDepth;
+                    depthLockInput.text = project.lockDepth
+                        ? "Unlock depth"
+                        : "Lock depth";
+                    rootFrame.updateSize();
+
+                }),
+
+                // Brush size control
                 hframe(
                     label("Brush size:"),
                     brushSizeInput = textInput("", () {
 
-                        import std.conv : to, ConvException;
                         try project.brushSize = brushSizeInput.value.to!uint;
-
-                        // Failed, ignore
                         catch (ConvException) { }
 
                     }),
                 )
+
             ),
 
 
