@@ -134,7 +134,7 @@ struct Packs {
         import isodi.raylib.cell : RaylibCell;
 
         /// Create the brush
-        auto cell = new RaylibCell(project.display, Position(), cellType);
+        auto cell = new RaylibCell(project.display, position(0, 0, Height(0, 0)), cellType);
         cell.color = Color(0xcc, 0xaa, 0xff, 0xee);
 
         project.brush = cell;
