@@ -18,6 +18,9 @@ struct Tabs {
         /// UI for the tabs.
         private GluiFrame tabs;
 
+        /// Main onion frame for the app.
+        GluiFilePicker filePicker;
+
         /// Frame for the palette/left sidebar.
         GluiFrame* palette;
 
@@ -54,6 +57,13 @@ struct Tabs {
 
             // New tab
             label("+"),
+
+            // Open a file
+            button(
+                layout!(1, "end"),
+                "Open file",
+                () { frames.filePicker.show(); }
+            ),
         );
 
     }
@@ -78,6 +88,8 @@ struct Tabs {
         import std.path : baseName;
 
         projects ~= project;
+
+        // Add to project list
         frames.tabs ~= label(project.filename ? project.filename.baseName : "project");
 
         // todo: double click to rename file

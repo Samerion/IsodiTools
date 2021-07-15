@@ -30,9 +30,6 @@ struct Packs {
         // Current tab
         GluiFrame openTabFrame;
 
-        // Hint for the current palette
-        GluiLabel hintLabel;
-
     }
 
     @disable this();
@@ -57,9 +54,6 @@ struct Packs {
             packsFrame = vframe(),
             tilesFrame = vframe(),
             skeletonsFrame = vframe(),
-
-            // Hint
-            hintLabel = label(),
 
         );
 

@@ -4,6 +4,7 @@ import glui;
 
 import isodi.tools.tabs;
 import isodi.tools.themes;
+import isodi.tools.open_file;
 
 /// Create the UI.
 GluiFrame createUI(ref Tabs tabs) {
@@ -13,15 +14,14 @@ GluiFrame createUI(ref Tabs tabs) {
 
     // Prepare the UI
     auto result = vframe(
-        emptyTheme,
-        layout(1, NodeAlign.fill),
+        layout!(1, "fill"),
 
         // Tab bar
         tabs.getUI,
 
         // Main space
         mainSpace = hframe(
-            layout(1, NodeAlign.fill),
+            layout!(1, "fill"),
 
             // Left sidebar (placeholder)
             vframe(),
@@ -31,16 +31,16 @@ GluiFrame createUI(ref Tabs tabs) {
             // while the mouse is down, it should expand the preview cells and only apply them when up; 2nd mouse
             // button or Esc should cancel the operation.
             frameHoverButton(
-                layout(1, NodeAlign.fill),
+                layout!(1, "fill"),
 
                 statusBar = hframe(
-                    layout(1, NodeAlign.fill, NodeAlign.end),
+                    layout!(1, "fill", "end"),
                     tooltipTheme,
 
                     label(),  // (placeholder)
 
                     statusRight = label(
-                        layout(1, NodeAlign.end)
+                        layout!(1, "end"),
                     ),
                 ),
 
@@ -76,7 +76,18 @@ GluiFrame createUI(ref Tabs tabs) {
     tabs.frames.objects = cast(GluiFrame*) &mainSpace.children[2];
 
     tabs.frames.status  = cast(GluiLabel*) &statusBar.children[0];
+    tabs.frames.filePicker = filePicker(
+        theme,
+        "Load a file...",
+        () => tabs.openProject.forwardFile(tabs.frames.filePicker.value),
+    );
 
-    return result;
+    return onionFrame(
+        layout!"fill",
+        emptyTheme,
+
+        result,
+        tabs.frames.filePicker,
+    );
 
 }

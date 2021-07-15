@@ -34,7 +34,7 @@ void main(string[] argv) {
     // Create the first project
     tabs.addProject(new Project);
 
-    foreach (arg; argv) {
+    foreach (arg; argv[1..$]) {
 
         forwardFile(tabs.openProject, arg);
 
@@ -68,6 +68,5 @@ void main(string[] argv) {
         ui.draw();
 
     }
-
 
 }

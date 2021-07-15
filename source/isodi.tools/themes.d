@@ -27,6 +27,10 @@ void loadThemes() {
 
         },
 
+        &GluiFilePicker.selectedStyleKey: style!q{
+            backgroundColor = Color(0xff, 0x51, 0x2f, 0xff);
+        },
+
     ];
 
     emptyTheme = [
