@@ -18,8 +18,8 @@ struct Tabs {
         /// UI for the tabs.
         private GluiFrame tabs;
 
-        /// Main onion frame for the app.
-        GluiFilePicker filePicker;
+        /// Node for opening files.
+        GluiFilePicker fileOpener;
 
         /// Frame for the palette/left sidebar.
         GluiFrame* palette;
@@ -62,7 +62,7 @@ struct Tabs {
             button(
                 layout!(1, "end"),
                 "Open file",
-                () { frames.filePicker.show(); }
+                () { frames.fileOpener.show(); }
             ),
         );
 

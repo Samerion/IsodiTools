@@ -17,6 +17,13 @@ import isodi.tools.objects;
 /// Represents an open project.
 class Project {
 
+    /// Saved settings for the project.
+    struct Settings {
+
+        uint chunkSize = -1;
+
+    }
+
     /// Path to the file.
     string filename;
 
@@ -36,6 +43,9 @@ class Project {
     GluiLabel status;
     // TODO custom label to erase own text after 3 seconds
     // or maybe, a better idea, a TickTimer node in glui to handle timing
+
+    /// Project settings.
+    Settings settings;
 
     /// Radius of the area to be filled with given paint.
     uint brushSize = 1;

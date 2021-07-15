@@ -7,7 +7,7 @@
 		"isodi": "0.4.1",
 		"libdparse": "0.14.0",
 		"raylib-d": "3.0.4",
-		"rcdata": "1.0.0-alpha.2",
+		"rcdata": "~main",
 		"rcjson": "1.0.0-alpha.3",
 		"stdx-allocator": "2.77.5"
 	}

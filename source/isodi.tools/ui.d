@@ -76,10 +76,12 @@ GluiFrame createUI(ref Tabs tabs) {
     tabs.frames.objects = cast(GluiFrame*) &mainSpace.children[2];
 
     tabs.frames.status  = cast(GluiLabel*) &statusBar.children[0];
-    tabs.frames.filePicker = filePicker(
+
+    // Save other global nodes
+    tabs.frames.fileOpener = filePicker(
         theme,
         "Load a file...",
-        () => tabs.openProject.forwardFile(tabs.frames.filePicker.value),
+        () => tabs.openProject.forwardFile(tabs.frames.fileOpener.value),
     );
 
     return onionFrame(
@@ -87,7 +89,8 @@ GluiFrame createUI(ref Tabs tabs) {
         emptyTheme,
 
         result,
-        tabs.frames.filePicker,
+        tabs.frames.fileOpener,
+        // TODO tabs.frames.fileSaver,
     );
 
 }

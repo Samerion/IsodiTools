@@ -79,20 +79,46 @@ struct Objects {
         brushSizeInput.size = Vector2(25, 0);
         brushSizeInput.value = "1";
 
+        bool requireFilename() {
+
+            // temporary: later use a file picker
+
+            // Check if the project has a filename
+            if (!project.filename.length) {
+
+                project.status.text = "Drop a folder into the window to pick a save location and retry";
+                project.status.updateSize();
+                return false;
+
+            }
+
+            return true;
+
+        }
+
         auto projectNode = addNode("Project",
 
-            "Export tilemap", () {
+            "Save", () {
 
-                // temporary: later use a file picker
+                if (!requireFilename) return;
 
-                // Check if the project has a filename
-                if (!project.filename.length) {
+                import isodi.tools.save_project;
 
-                    project.status.text = "Drop a folder into the window to pick a save location and retry";
-                    project.status.updateSize();
-                    return;
+                const path = project.filename.setExtension("isdproj");
 
-                }
+                // Save the project
+                project.saveProject(path);
+
+                // Add a status text
+                project.status.text = format!"Saved to %s"(path);
+                project.status.updateSize();
+
+
+            },
+
+            "Export tilemaps", () {
+
+                if (!requireFilename) return;
 
                 const path = project.filename.setExtension("isodi");
 
@@ -104,7 +130,7 @@ struct Objects {
                 fs.write(path, appn[]);
 
                 // Add a status text
-                project.status.text = format!"Saved to %s"(path);
+                project.status.text = format!"Exported to %s"(path);
                 project.status.updateSize();
 
             },

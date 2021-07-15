@@ -5,7 +5,8 @@
 	"copyright": "Copyright © 2021, Soaku",
 	"dependencies": {
 		"glui": "~>0.3.0",
-		"isodi": "~>0.4.1"
+		"isodi": "~>0.4.1",
+		"rcdata": ">=0.0.0"
 	},
 	"description": "Resource editor for Isodi",
 	"license": "GPL-3.0",
