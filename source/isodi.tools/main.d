@@ -36,7 +36,7 @@ void main(string[] argv) {
 
     foreach (arg; argv[1..$]) {
 
-        forwardFile(tabs.openProject, arg);
+        forwardFile(tabs, arg);
 
     }
 
@@ -61,7 +61,6 @@ void main(string[] argv) {
         processInput(ui, tabs);
 
         // Draw the active display
-        tabs.openProject.display.camera.updateCamera(keybinds);
         tabs.openProject.display.draw();
 
         // Draw the UI

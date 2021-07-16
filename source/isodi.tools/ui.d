@@ -81,7 +81,7 @@ GluiFrame createUI(ref Tabs tabs) {
     tabs.frames.fileOpener = filePicker(
         theme,
         "Load a file...",
-        () => tabs.openProject.forwardFile(tabs.frames.fileOpener.value),
+        () => tabs.forwardFile(tabs.frames.fileOpener.value),
     );
 
     return onionFrame(

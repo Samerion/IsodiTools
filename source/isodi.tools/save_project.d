@@ -5,16 +5,34 @@ import rcdata.utils;
 
 import std.file;
 import std.array;
+import std.traits;
+import std.string;
 import std.algorithm;
+import std.exception;
 
 import isodi.tilemap;
 
 import isodi.tools.project;
 
-enum FileVersion : ubyte {
-    major = 0,
-    minor = 1,
-    patch = 0,
+enum FileHeader = "isodiproject".staticArray;
+alias FileHeaderType = Unqual!(typeof(FileHeader));
+
+struct FileVersion {
+
+    ubyte major, minor, patch;
+
+    static FileVersion current = {
+        major: 0,
+        minor: 1,
+        patch: 0,
+    };
+
+    string toString() {
+
+        return format!"%s.%s.%s"(major, minor, patch);
+
+    }
+
 }
 
 /// Save the project.
@@ -39,12 +57,10 @@ ubyte[] saveProject(Project project) {
     auto bin = rcbinSerializer(buffer);
 
     // Encode header
-    bin.get("isodiproject".staticArray);
+    bin.get(FileHeader);
 
     // Add version number of the file format
-    bin.get(FileVersion.major)
-       .get(FileVersion.minor)
-       .get(FileVersion.patch);
+    bin.get(FileVersion.current);
 
     // Save settings
     bin.get(project.settings);
@@ -59,5 +75,63 @@ ubyte[] saveProject(Project project) {
     saveTilemap(project.display, buffer);
 
     return buffer[];
+
+}
+
+/// Load a project from file.
+Project loadProject(string filename) {
+
+    auto project = loadProject(cast(ubyte[]) read(filename));
+    project.filename = filename;
+    return project;
+
+
+}
+
+/// Load a project from data.
+Project loadProject(ubyte[] data) {
+
+    auto bin = rcbinParser(data);
+
+    // Check the header
+    {
+
+        const header = bin.read!FileHeaderType;
+        enforce(header == FileHeader, "Given file is not a project file.");
+
+        const ver = bin.read!FileVersion;
+        const current = FileVersion.current;
+
+        const error = format!"Project version %s can't be read, "(ver);
+
+        enforce(
+            ver.major == current.major,
+            error ~ format!"supported major is %s.x.x"(current.major),
+        );
+        enforce(
+            ver.minor <= current.minor,
+            error ~ format!"supporting up to %s.%s.x, please update Isodi Tools!"(current.major, current.minor),
+        );
+        enforce(
+            ver.minor < current.minor || ver.patch <= current.patch,
+            error ~ format!"supporting up to %s, please update Isodi Tools!"(current),
+        );
+
+    }
+
+    // Load the project
+    auto project = new Project;
+
+    // Get the settings
+    bin.get(project.settings);
+
+    // Load packs
+    auto packs = bin.read!(string[]);
+    project.packs.addPack(packs);
+
+    // Load the rest as a tilemap
+    project.display.loadTilemap(data);
+
+    return project;
 
 }

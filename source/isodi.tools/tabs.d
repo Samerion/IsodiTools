@@ -56,7 +56,10 @@ struct Tabs {
             frames.tabs = hframe(),
 
             // New tab
-            label("+"),
+            button(
+                "+",
+                () => addProject(new Project),
+            ),
 
             // Open a file
             button(
@@ -90,7 +93,10 @@ struct Tabs {
         projects ~= project;
 
         // Add to project list
-        frames.tabs ~= label(project.filename ? project.filename.baseName : "project");
+        frames.tabs ~= button(
+            project.filename ? project.filename.baseName : "project",
+            () => switchTo(project),
+        );
 
         // todo: double click to rename file
 

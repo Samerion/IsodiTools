@@ -3,8 +3,8 @@
 	"versions": {
 		"ddmp": "0.0.1-0.dev.3",
 		"fluent-asserts": "0.13.3",
-		"glui": "0.3.0",
-		"isodi": "0.4.1",
+		"glui": "~main",
+		"isodi": "~main",
 		"libdparse": "0.14.0",
 		"raylib-d": "3.0.4",
 		"rcdata": "~main",

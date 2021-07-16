@@ -43,13 +43,19 @@ void processInput(GluiNode uiRoot, ref Tabs tabs) {
     const changeDepth = !project.lockDepth || holdingShift;
 
     // Get dropped files
-    forwardDroppedFiles(project);
+    forwardDroppedFiles(tabs);
 
     // Change movement speed if holding shift
     keybinds.movementSpeed = holdingShift ? 10 : 6;
 
+    // Keybinds: Stop if something has focus
+    if (uiRoot.tree.focus !is null) return;
+
+    // Update the camera
+    tabs.openProject.display.camera.updateCamera(keybinds);
+
     // Nothing is focused
-    loop: while (uiRoot.tree.focus is null) {
+    loop: while (true) {
 
         // Read characters — let the system implement repeating keys
         // TODO: implement repeat manually, characters have limitations when it comes to certain modifiers, eg. alt

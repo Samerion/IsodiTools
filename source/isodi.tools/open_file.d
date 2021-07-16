@@ -9,10 +9,11 @@ import raylib;
 
 import isodi.tilemap;
 
-import isodi.tools.project;
+import isodi.tools.tabs;
+import isodi.tools.save_project;
 
 /// Read dropped files if any and forward them further.
-void forwardDroppedFiles(Project project) {
+void forwardDroppedFiles(ref Tabs tabs) {
 
     // Get the dropped files
     int fileCount;
@@ -24,14 +25,17 @@ void forwardDroppedFiles(Project project) {
 
         auto path = cast(string) droppedFiles[index].fromStringz.dup;
 
-        forwardFile(project, path);
+        forwardFile(tabs, path);
 
     }
 
 }
 
 /// Forward files to the correct function by type
-void forwardFile(Project project, string path) {
+void forwardFile(ref Tabs tabs, string path) {
+
+    // Get the current project
+    auto project = tabs.openProject;
 
     // Unrecognized file, we should ignore it for now
     if (!path.exists) return;
@@ -64,12 +68,22 @@ void forwardFile(Project project, string path) {
 
     }
 
+    // TODO: check next cases by content
+
     // Case 3: tilemap file
     else if (path.isFile && path.extension == ".isodi") {
 
         // TODO add onto a new layer
         auto file = cast(ubyte[]) read(path);
         project.display.loadTilemap(file);
+
+    }
+
+    // Case 3: project file
+    else if (path.isFile && path.extension == ".isdproj") {
+
+        // Load the project
+        tabs.addProject(loadProject(path));
 
     }
 
