@@ -77,13 +77,18 @@ void forwardFile(ref Tabs tabs, string path) {
         auto file = cast(ubyte[]) read(path);
         project.display.loadTilemap(file);
 
+        project.status.text = format!"Loaded tilemap %s"(path);
+
     }
 
-    // Case 3: project file
+    // Case 4: project file
     else if (path.isFile && path.extension == ".isdproj") {
 
         // Load the project
         tabs.addProject(loadProject(path));
+
+        // Note: project changed
+        tabs.openProject.status.text = format!"Loaded project %s"(path);
 
     }
 
