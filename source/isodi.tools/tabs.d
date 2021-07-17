@@ -27,8 +27,11 @@ struct Tabs {
         /// Frame for object management.
         GluiFrame* objects;
 
-        /// Status label
+        /// Status label.
         GluiLabel* status;
+
+        /// Options dialog.
+        GluiFrame* options;
 
     }
 
@@ -77,7 +80,8 @@ struct Tabs {
         // Update the frames
         *frames.palette = project.packs.rootFrame;
         *frames.objects = project.objects.rootFrame;
-        *frames.status = project.status;
+        *frames.status  = project.status;
+        *frames.options = project.optionsFrame;
         frames.palette.updateSize();
 
         // Set the project

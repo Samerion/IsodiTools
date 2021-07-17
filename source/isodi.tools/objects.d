@@ -116,6 +116,13 @@ struct Objects {
 
             },
 
+            "Options", () {
+
+                project.optionsFrame.show();
+                project.optionsFrame.updateSize();
+
+            },
+
             "Export tilemaps", () {
 
                 if (!requireFilename) return;

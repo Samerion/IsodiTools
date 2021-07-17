@@ -31,6 +31,22 @@ void loadThemes() {
             backgroundColor = Color(0xff, 0x51, 0x2f, 0xff);
         },
 
+        &GluiTextInput.styleKey: style!q{
+            backgroundColor = Color(0xdd, 0xdd, 0xdd, 0xff);
+            textColor = Colors.BLACK;
+        },
+
+        &GluiTextInput.emptyStyleKey: style!q{
+            backgroundColor = Color(0xdd, 0xdd, 0xdd, 0xff);
+            textColor = Color(0x00, 0x00, 0x00, 0xaa);
+        },
+
+        &GluiTextInput.focusStyleKey: style!q{
+            backgroundColor = Color(0xbb, 0xbb, 0xbb, 0xff);
+            textColor = Colors.BLACK;
+        }
+
+
     ];
 
     emptyTheme = [

@@ -9,7 +9,7 @@ import isodi.tools.open_file;
 /// Create the UI.
 GluiFrame createUI(ref Tabs tabs) {
 
-    GluiFrame mainSpace, statusBar;
+    GluiFrame mainSpace, drawingSpace, statusBar;
     GluiLabel statusRight;
 
     // Prepare the UI
@@ -26,12 +26,11 @@ GluiFrame createUI(ref Tabs tabs) {
             // Left sidebar (placeholder)
             vframe(),
 
-            // Main space
-            // TODO: make a custom button to support filling by dragging
-            // while the mouse is down, it should expand the preview cells and only apply them when up; 2nd mouse
-            // button or Esc should cancel the operation.
-            frameHoverButton(
+            // Drawing space
+            drawingSpace = frameHoverButton(
                 layout!(1, "fill"),
+
+                vframe(),
 
                 statusBar = hframe(
                     layout!(1, "fill", "end"),
@@ -47,6 +46,9 @@ GluiFrame createUI(ref Tabs tabs) {
                 () {
 
                     import std.format : format;
+
+                    // Ignore if there is a popup visible
+                    if (!tabs.frames.options.hidden) return;
 
                     // Update the brush
                     tabs.openProject.updateBrush();
@@ -76,21 +78,24 @@ GluiFrame createUI(ref Tabs tabs) {
     tabs.frames.objects = cast(GluiFrame*) &mainSpace.children[2];
 
     tabs.frames.status  = cast(GluiLabel*) &statusBar.children[0];
-
-    // Save other global nodes
-    tabs.frames.fileOpener = filePicker(
-        theme,
-        "Load a file...",
-        () => tabs.forwardFile(tabs.frames.fileOpener.value),
-    );
+    tabs.frames.options = cast(GluiFrame*) &drawingSpace.children[0];
 
     return onionFrame(
         layout!"fill",
         emptyTheme,
 
+        // Main window
         result,
-        tabs.frames.fileOpener,
-        // TODO tabs.frames.fileSaver,
+
+        // File pickers
+        tabs.frames.fileOpener = filePicker(
+            theme,
+            "Load a file...",
+            () => tabs.forwardFile(tabs.frames.fileOpener.value),
+        ),
+        // TODO tabs.frames.fileSaver, (placeholder below)
+        vframe(),
+
     );
 
 }

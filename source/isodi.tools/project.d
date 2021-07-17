@@ -13,16 +13,10 @@ import isodi.raylib.display;
 
 import isodi.tools.packs;
 import isodi.tools.objects;
+import isodi.tools.options;
 
 /// Represents an open project.
 class Project {
-
-    /// Saved settings for the project.
-    struct Settings {
-
-        uint chunkSize = -1;
-
-    }
 
     /// Path to the file.
     string filename;
@@ -44,8 +38,11 @@ class Project {
     // TODO custom label to erase own text after 3 seconds
     // or maybe, a better idea, a TickTimer node in glui to handle timing
 
-    /// Project settings.
-    Settings settings;
+    /// Project options.
+    ProjectOptions options;
+
+    /// UI for the options modal.
+    GluiFrame optionsFrame;
 
     /// Radius of the area to be filled with given paint.
     uint brushSize = 1;
@@ -101,6 +98,8 @@ class Project {
         packs = Packs(this);
         objects = Objects(this);
         status = label();
+
+        optionsFrame = projectOptionsUI(this);
 
     }
 

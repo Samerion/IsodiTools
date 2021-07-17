@@ -62,8 +62,8 @@ ubyte[] saveProject(Project project) {
     // Add version number of the file format
     bin.get(FileVersion.current);
 
-    // Save settings
-    bin.get(project.settings);
+    // Save options
+    bin.get(project.options);
 
     // Save pack list
     // TODO: save pack name and have a program-global registry of packs
@@ -122,8 +122,8 @@ Project loadProject(ubyte[] data) {
     // Load the project
     auto project = new Project;
 
-    // Get the settings
-    bin.get(project.settings);
+    // Get the options
+    bin.get(project.options);
 
     // Load packs
     auto packs = bin.read!(string[]);
