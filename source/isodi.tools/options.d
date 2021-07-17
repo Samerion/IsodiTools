@@ -15,51 +15,72 @@ struct ProjectOptions {
 
 }
 
-/// Get UI for the project's options
-GluiFrame projectOptionsUI(Project project) {
+class ProjectOptionsFrame : GluiFrame {
 
-    auto options = &project.options;
-
-    GluiFrame ret;
+    Project project;
     GluiTextInput chunkSizeInput;
 
-    ret = vframe(
+    alias hidden = GluiFrame.hidden;
 
-        theme,
-        layout!(1, "center"),
+    @property
+    override bool hidden(bool value) {
 
-        label(
-            layout!"center",
-            "Project options",
-        ),
+        // Update values before showing again
+        if (value == false) updateValues();
 
-        vframe(
+        return super.hidden = value;
+
+    }
+
+    this(Project project) {
+
+        this.project = project;
+
+        // Create the node
+        super(
+
+            .theme,
+            .layout!(1, "center"),
+
             label(
-                "Enable automatic chunking"
+                .layout!"center",
+                "Project options",
             ),
-            label(
-                "Chunks will always be square. To enable chunking, specify square length in the field below. "
-                ~ "Chunks will automatically be exported to separate files on tilemap export. Set to 0 to disable."
+
+            vframe(
+                label(
+                    "Enable automatic chunking"
+                ),
+                label(
+                    "Chunks will always be square. To enable chunking, specify square length in the field below. "
+                    ~ "Chunks will automatically be exported to separate files on tilemap export. Set to 0 to disable."
+                ),
+                chunkSizeInput = textInput(
+                    .layout!"fill",
+                    "Chunk size",
+                    () {
+                        project.options.chunkSize = chunkSizeInput.value.to!int.ifThrown(0);
+                    }
+                ),
             ),
-            chunkSizeInput = textInput(
-                layout!"fill",
-                "Chunk size",
-                () {
-                    project.options.chunkSize = chunkSizeInput.value.to!int.ifThrown(0);
-                }
+
+            button(
+                .layout!(1, "center"),
+                "Close",
+                { hide(); },
             ),
-        ),
 
-        button(
-            layout!(1, "center"),
-            "Close",
-            { ret.hide(); },
-        ),
+        );
+        hide();
 
-    );
+    }
 
-    ret.hide();
+    void updateValues() {
 
-    return ret;
+        auto options = &project.options;
+
+        chunkSizeInput.value = options.chunkSize.to!string;
+
+    }
 
 }
