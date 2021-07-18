@@ -245,7 +245,7 @@ class Project {
         scope (exit) rlPopMatrix();
 
         const size = cast(int) options.chunkSize;
-        const name = filename.baseName(".isdproj");
+        const name = filename.baseName(".isotools");
         const cellSize = display.cellSize;
         const distance = to!int(250 / size);
 

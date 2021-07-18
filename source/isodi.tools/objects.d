@@ -7,9 +7,6 @@ import std.conv;
 import std.path;
 import std.array;
 import std.format;
-import fs = std.file;
-
-import isodi.tilemap;
 
 import isodi.tools.themes;
 import isodi.tools.project;
@@ -104,7 +101,7 @@ struct Objects {
 
                 import isodi.tools.save_project;
 
-                const path = project.filename.setExtension("isdproj");
+                const path = project.filename.setExtension("isotools");
 
                 // Save the project
                 project.saveProject(path);
@@ -127,18 +124,10 @@ struct Objects {
 
                 if (!requireFilename) return;
 
-                const path = project.filename.setExtension("isodi");
+                import isodi.tools.save_tilemap;
 
-                // Write to a buffer
-                auto appn = appender!(ubyte[]);
-                project.display.saveTilemap(appn);
+                project.exportTilemaps();
 
-                // Save the data
-                fs.write(path, appn[]);
-
-                // Add a status text
-                project.status.text = format!"Exported to %s"(path);
-                project.status.updateSize();
 
             },
 
