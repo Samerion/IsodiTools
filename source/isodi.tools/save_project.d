@@ -68,7 +68,8 @@ ubyte[] saveProject(Project project) {
     // Save pack list
     // TODO: save pack name and have a program-global registry of packs
     // Would allow downloading assets like in the main client and easily transfering projects between different devices
-    bin.get(project.display.packs.map!"a.path".array);
+    const packs = project.display.packs[].map!"a.path".array;
+    bin.get(packs);
 
     // Save the project as a huge tilemap
     // Note: chunking does not apply here, but on export
@@ -124,6 +125,8 @@ Project loadProject(ubyte[] data) {
 
     // Get the options
     bin.get(project.options);
+
+    // TODO: if failed to load a tile or pack, make a prompt to add more packs
 
     // Load packs
     auto packs = bin.read!(string[]);

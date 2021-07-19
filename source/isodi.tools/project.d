@@ -3,7 +3,10 @@ module isodi.tools.project;
 import glui;
 import raylib;
 
+import std.conv;
 import std.math;
+import std.path;
+import std.string;
 import std.traits;
 
 import isodi;
@@ -79,19 +82,11 @@ class Project {
 
         display = new RaylibDisplay;
         display.camera.offset = Camera.Offset(0, 0, 0);
-        display.camera.follow = display.addAnchor({
+        display.camera.follow = display.addAnchor({ });
 
-            rlPushMatrix();
-            scope (exit) rlPopMatrix();
-
-            // Move to camera
-            const campos = display.snapWorldPosition(display.raylibCamera.position);
-            rlTranslatef(campos.x, brushHeight * display.cellSize, campos.z);
-
-            // Draw the grid
-            //DrawGrid(10, display.cellSize);
-
-        });
+        // Add an anchor for drawing the overlay
+        auto overlayAnchor = display.addAnchor(&drawOverlay);
+        overlayAnchor.drawOrder = RaylibAnchor.DrawOrder.last;
 
         _brushAnchor = cast(RaylibAnchor) display.addAnchor({ });
 
@@ -99,7 +94,7 @@ class Project {
         objects = Objects(this);
         status = label();
 
-        optionsFrame = projectOptionsUI(this);
+        optionsFrame = new ProjectOptionsFrame(this);
 
     }
 
@@ -238,6 +233,49 @@ class Project {
         auto position = display.isodiPosition(mouseHit.position);
         position.height.depth = 0;
         return position;
+
+    }
+
+    void drawOverlay() {
+
+        // If chunking enabled
+        if (!options.chunkSize) return;
+
+        rlPushMatrix();
+        scope (exit) rlPopMatrix();
+
+        const size = cast(int) options.chunkSize;
+        const name = filename.baseName(".isotools");
+        const cellSize = display.cellSize;
+        const distance = to!int(250 / size);
+
+        // Get current chunk relative to camera
+        auto chunkOffset = display.camera.offset;
+        chunkOffset.x = to!int(chunkOffset.x / size);
+        chunkOffset.y = to!int(chunkOffset.y / size);
+
+        // Get tile position for the chunk
+        auto offset = chunkOffset;
+        offset.x *= size;
+        offset.y *= size;
+
+        // Place a grid
+        rlTranslatef(offset.x * cellSize, brushHeight * cellSize, offset.y * cellSize);
+        DrawGrid(distance, options.chunkSize * display.cellSize);
+
+        // Caption each chunk
+        foreach (i; -distance/2 .. distance/2)
+        foreach (j; -distance/2 .. distance/2) {
+
+            rlPushMatrix();
+            scope (exit) rlPopMatrix();
+
+            const caption = format!"%s_%s_%s.isodi"(name, chunkOffset.x + i, chunkOffset.y + j);
+            rlTranslatef(i * cellSize * size, 0, j * cellSize * size);
+            rlRotatef(90, 1, 0, 0);
+            DrawText(caption.toStringz, 0, 0, 48, Colors.WHITE);
+
+        }
 
     }
 

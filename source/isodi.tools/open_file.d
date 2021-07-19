@@ -82,7 +82,7 @@ void forwardFile(ref Tabs tabs, string path) {
     }
 
     // Case 4: project file
-    else if (path.isFile && path.extension == ".isdproj") {
+    else if (path.isFile && path.extension == ".isotools") {
 
         // Load the project
         tabs.addProject(loadProject(path));
