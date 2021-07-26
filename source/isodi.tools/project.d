@@ -68,7 +68,10 @@ class Project {
         Object3D _brush;
 
         /// Anchor holding the brush.
-        RaylibAnchor _brushAnchor;
+        RaylibAnchor brushAnchor;
+
+        /// Anchor for the overlay.
+        RaylibAnchor overlayAnchor;
 
         /// If true, painting is locked until the brush changes. Used to prevent repeatedly applying the same paint
         /// over and over.
@@ -85,16 +88,33 @@ class Project {
         display.camera.follow = display.addAnchor({ });
 
         // Add an anchor for drawing the overlay
-        auto overlayAnchor = display.addAnchor(&drawOverlay);
+        overlayAnchor = display.addAnchor(&drawOverlay);
         overlayAnchor.drawOrder = RaylibAnchor.DrawOrder.last;
 
-        _brushAnchor = cast(RaylibAnchor) display.addAnchor({ });
+        brushAnchor = cast(RaylibAnchor) display.addAnchor({ });
 
         packs = Packs(this);
         objects = Objects(this);
         status = label();
 
         optionsFrame = new ProjectOptionsFrame(this);
+
+    }
+
+    /// Draw the project display.
+    void draw() {
+
+        // Update brush position
+        auto pos = brushPosition;
+        pos.height.depth = brushHeight;
+        brushAnchor.position = pos;
+
+        // Update overlay position
+        const cameraOffset = display.camera.offset;
+        overlayAnchor.position = position(cameraOffset.x.to!int, cameraOffset.y.to!int);
+
+        // Finally, draw the display
+        display.draw();
 
     }
 
@@ -109,7 +129,7 @@ class Project {
 
         paintLocked = false;
         _brush = obj;
-        _brushAnchor.callback = {
+        brushAnchor.callback = {
 
             // Update height
             brushHeight = round(display.camera.offset.height / heightSnap) * heightSnap;
@@ -119,7 +139,7 @@ class Project {
             position.height.depth = brushDepth;
 
             // If the position changed
-            if (_brushAnchor.position != position) {
+            if (brushAnchor.position != position) {
 
                 // Unlock the brush
                 paintLocked = false;
@@ -133,9 +153,6 @@ class Project {
 
                 // It doesn't (assuming dynamic position)
                 else obj.position = pos;
-
-                // Update anchor position
-                _brushAnchor.position = position;
 
             }
 
@@ -167,7 +184,7 @@ class Project {
         // Ignore if there is no brush
         if (!_brush) return;
 
-        const iterator = CircleIterator(_brushAnchor.position, brushSize - 1);
+        const iterator = CircleIterator(brushAnchor.position, brushSize - 1);
 
         // RMB: erase
         if (IsMouseButtonDown(MouseButton.MOUSE_RIGHT_BUTTON)) {
@@ -236,7 +253,9 @@ class Project {
 
     }
 
-    void drawOverlay() {
+    protected void drawOverlay() {
+
+        import isodi.camera : Camera;
 
         // If chunking enabled
         if (!options.chunkSize) return;
@@ -250,9 +269,9 @@ class Project {
         const distance = to!int(250 / size);
 
         // Get current chunk relative to camera
-        auto chunkOffset = display.camera.offset;
-        chunkOffset.x = to!int(chunkOffset.x / size);
-        chunkOffset.y = to!int(chunkOffset.y / size);
+        Camera.Offset chunkOffset = display.camera.offset;
+        chunkOffset.x = floor(1.0 * chunkOffset.x / size);
+        chunkOffset.y = floor(1.0 * chunkOffset.y / size);
 
         // Get tile position for the chunk
         auto offset = chunkOffset;

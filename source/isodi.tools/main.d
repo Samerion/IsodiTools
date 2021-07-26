@@ -60,8 +60,8 @@ void main(string[] argv) {
         // Process general input
         processInput(ui, tabs);
 
-        // Draw the active display
-        tabs.openProject.display.draw();
+        // Draw the active project
+        tabs.openProject.draw();
 
         // Draw the UI
         ui.draw();
