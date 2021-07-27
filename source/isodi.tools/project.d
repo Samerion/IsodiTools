@@ -106,10 +106,20 @@ class Project {
 
         // Update brush position
         auto pos = brushPosition;
-        pos.height.depth = brushHeight;
-        brushAnchor.position = pos;
+        pos.height.depth = brushDepth;
 
-        // Update overlay position
+        // If the position changed
+        if (brushAnchor.position != pos) {
+
+            // Unlock the brush
+            paintLocked = false;
+
+            // Update the brush anchor
+            brushAnchor.position = pos;
+
+        }
+
+        // Update overlay anchor position
         const cameraOffset = display.camera.offset;
         overlayAnchor.position = position(cameraOffset.x.to!int, cameraOffset.y.to!int);
 
@@ -137,14 +147,6 @@ class Project {
             // Get the brush position
             auto position = brushPosition;
             position.height.depth = brushDepth;
-
-            // If the position changed
-            if (brushAnchor.position != position) {
-
-                // Unlock the brush
-                paintLocked = false;
-
-            }
 
             void setPosition(Position pos) {
 
