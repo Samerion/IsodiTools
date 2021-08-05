@@ -51,20 +51,17 @@ void main(string[] argv) {
         BeginDrawing();
         scope (exit) EndDrawing();
 
-        // Set the mouse cursor
-        SetMouseCursor(MouseCursor.MOUSE_CURSOR_DEFAULT);
-
         // Clear the background
         ClearBackground(Colors.BLACK);
-
-        // Process general input
-        processInput(ui, tabs);
 
         // Draw the active project
         tabs.openProject.draw();
 
         // Draw the UI
         ui.draw();
+
+        // Process general input
+        processInput(ui, tabs);
 
     }
 

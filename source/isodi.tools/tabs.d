@@ -82,7 +82,7 @@ struct Tabs {
         *frames.objects = project.objects.rootFrame;
         *frames.status  = project.status;
         *frames.options = project.optionsFrame;
-        frames.palette.updateSize(); // TODO this won't work, the elements may have not been drawn yet
+        frames.palette.updateSize();
 
         // Set the project
         openProject = project;

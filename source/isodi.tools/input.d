@@ -48,8 +48,8 @@ void processInput(GluiNode uiRoot, ref Tabs tabs) {
     // Change movement speed if holding shift
     keybinds.movementSpeed = holdingShift ? 10 : 6;
 
-    // Keybinds: Stop if something has focus
-    if (uiRoot.tree.focus !is null) return;
+    // Keybinds: Stop if input was already handled
+    if (uiRoot.tree.keyboardHandled) return;
 
     // Update the camera
     tabs.openProject.display.camera.updateCamera(keybinds);
