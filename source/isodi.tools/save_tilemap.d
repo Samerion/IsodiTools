@@ -11,6 +11,10 @@ import isodi.tilemap;
 
 import isodi.tools.project;
 
+
+@safe:
+
+
 private struct ChunkPosition {
 
     int x, y;

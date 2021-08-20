@@ -6,6 +6,10 @@ import isodi.tools.tabs;
 import isodi.tools.themes;
 import isodi.tools.open_file;
 
+
+@safe:
+
+
 /// Create the UI.
 GluiFrame createUI(ref Tabs tabs) {
 
@@ -73,12 +77,16 @@ GluiFrame createUI(ref Tabs tabs) {
 
     );
 
-    // Save pointers
-    tabs.frames.palette = cast(GluiFrame*) &mainSpace.children.childRef(0);
-    tabs.frames.objects = cast(GluiFrame*) &mainSpace.children.childRef(2);
+    () @trusted {
 
-    tabs.frames.status  = cast(GluiLabel*) &statusBar.children.childRef(0);
-    tabs.frames.options = cast(GluiFrame*) &drawingSpace.children.childRef(0);
+        // Save pointers
+        tabs.frames.palette = cast(GluiFrame*) &mainSpace.children.childRef(0);
+        tabs.frames.objects = cast(GluiFrame*) &mainSpace.children.childRef(2);
+
+        tabs.frames.status  = cast(GluiLabel*) &statusBar.children.childRef(0);
+        tabs.frames.options = cast(GluiFrame*) &drawingSpace.children.childRef(0);
+
+    }();
 
     return onionFrame(
         layout!"fill",

@@ -14,6 +14,10 @@ import isodi.tilemap;
 
 import isodi.tools.project;
 
+
+@safe:
+
+
 enum FileHeader = "isodiproject".staticArray;
 alias FileHeaderType = Unqual!(typeof(FileHeader));
 
@@ -51,7 +55,7 @@ void saveProject(Project project, string path) {
 }
 
 /// Ditto.
-ubyte[] saveProject(Project project) {
+ubyte[] saveProject(Project project) @trusted {
 
     auto buffer = appender!(ubyte[]);
     auto bin = rcbinSerializer(buffer);
@@ -80,7 +84,7 @@ ubyte[] saveProject(Project project) {
 }
 
 /// Load a project from file.
-Project loadProject(string filename) {
+Project loadProject(string filename) @trusted {
 
     auto project = loadProject(cast(ubyte[]) read(filename));
     project.filename = filename;
@@ -90,7 +94,7 @@ Project loadProject(string filename) {
 }
 
 /// Load a project from data.
-Project loadProject(ubyte[] data) {
+Project loadProject(ubyte[] data) @trusted {
 
     auto bin = rcbinParser(data);
 

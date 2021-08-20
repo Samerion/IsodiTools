@@ -11,7 +11,11 @@ import isodi.raylib.camera;
 import isodi.tools.tabs;
 import isodi.tools.open_file;
 
-private extern (C) int GetCharPressed() nothrow @nogc;
+
+@safe:
+
+
+private extern (C) int GetCharPressed() nothrow @nogc @trusted;
 
 // Create camera keybinds
 CameraKeybindings keybinds = {
@@ -39,7 +43,7 @@ void processInput(GluiNode uiRoot, ref Tabs tabs) {
     auto project = tabs.openProject;
     auto camera = &project.display.camera;
 
-    const holdingShift = IsKeyDown(KeyboardKey.KEY_LEFT_SHIFT);
+    const holdingShift = (() @trusted => IsKeyDown(KeyboardKey.KEY_LEFT_SHIFT))();
     const changeDepth = !project.lockDepth || holdingShift;
 
     // Get dropped files
@@ -57,9 +61,11 @@ void processInput(GluiNode uiRoot, ref Tabs tabs) {
     // Nothing is focused
     loop: while (true) {
 
+        const getChar = () @trusted => GetCharPressed;
+
         // Read characters — let the system implement repeating keys
         // TODO: implement repeat manually, characters have limitations when it comes to certain modifiers, eg. alt
-        switch (GetCharPressed) {
+        switch (getChar()) {
 
             // Block up
             case 'r', 'R':

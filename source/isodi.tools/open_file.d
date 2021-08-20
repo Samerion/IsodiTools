@@ -12,8 +12,12 @@ import isodi.tilemap;
 import isodi.tools.tabs;
 import isodi.tools.save_project;
 
+
+@safe:
+
+
 /// Read dropped files if any and forward them further.
-void forwardDroppedFiles(ref Tabs tabs) {
+void forwardDroppedFiles(ref Tabs tabs) @trusted {
 
     // Get the dropped files
     int fileCount;
@@ -74,7 +78,7 @@ void forwardFile(ref Tabs tabs, string path) {
     else if (path.isFile && path.extension == ".isodi") {
 
         // TODO add onto a new layer
-        auto file = cast(ubyte[]) read(path);
+        auto file = (() @trusted => cast(ubyte[]) read(path))();
         project.display.loadTilemap(file);
 
         project.status.text = format!"Loaded tilemap %s"(path);

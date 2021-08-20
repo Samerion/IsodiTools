@@ -13,7 +13,11 @@ import isodi.tools.themes;
 import isodi.tools.project;
 import isodi.tools.open_file;
 
-void main(string[] argv) {
+
+@safe:
+
+
+void main(string[] argv) @trusted {
 
     // Prepare the window
     SetTraceLogLevel(TraceLogType.LOG_WARNING);
@@ -23,9 +27,6 @@ void main(string[] argv) {
     SetWindowMinSize(800, 600);
     SetExitKey(0);
     scope (exit) CloseWindow();
-
-    // Load themes
-    loadThemes();
 
     // Prepare tabs
     Tabs tabs;

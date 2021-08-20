@@ -11,6 +11,10 @@ import std.format;
 import isodi.tools.themes;
 import isodi.tools.project;
 
+
+@safe:
+
+
 /// This struct is used to manage objects within an Isodi display.
 struct Objects {
 
