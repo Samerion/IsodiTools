@@ -44,7 +44,7 @@ struct Objects {
 
             // Object list
             objectList = vframe(
-                layout(1),
+                layout!(1, "fill", "start"),
             ),
 
             // Tool options
@@ -167,7 +167,7 @@ struct Objects {
         import std.format : format;
         import std.functional : toDelegate;
 
-        auto fillH = layout(NodeAlign.fill, NodeAlign.start);
+        auto fillH = layout!("fill", "start");
 
         GluiFrame result, dropdown;
 

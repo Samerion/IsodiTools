@@ -29,7 +29,12 @@ shared static this() {
 
     theme = makeTheme!q{
 
-        GluiButton!().styleAdd.backgroundColor = Colors.WHITE;
+        GluiButton!().styleAdd!q{
+
+            backgroundColor = Colors.WHITE;
+            margin.sideY = 0;
+
+        };
 
     };
 
