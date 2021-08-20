@@ -18,6 +18,10 @@ import isodi.tools.packs;
 import isodi.tools.objects;
 import isodi.tools.options;
 
+
+@safe:
+
+
 /// Represents an open project.
 class Project {
 
@@ -181,7 +185,7 @@ class Project {
     }
 
     /// Take input and update brush status, assuming the project space is hovered/active.
-    void updateBrush() {
+    void updateBrush() @trusted {
 
         // Ignore if there is no brush
         if (!_brush) return;
@@ -239,7 +243,7 @@ class Project {
     }
 
     /// Get the position of the brush.
-    protected Position brushPosition() const {
+    protected Position brushPosition() const @trusted {
 
         const groundHeight = brushHeight * display.cellSize;
 
@@ -255,7 +259,7 @@ class Project {
 
     }
 
-    protected void drawOverlay() {
+    protected void drawOverlay() @trusted {
 
         import isodi.camera : Camera;
 
@@ -327,7 +331,7 @@ private struct CircleIterator {
     }
 
     // iterate on a square filtered to a circle, consider midpoint circle algorithm in the future
-    int opApply(scope int delegate(Position) dg) const {
+    int opApply(scope int delegate(Position) @trusted dg) const {
 
         auto now = from;
         auto rad2 = radius*radius;

@@ -14,6 +14,10 @@ import isodi.pack;
 import isodi.tools.themes;
 import isodi.tools.project;
 
+
+@safe:
+
+
 /// This struct is used to load and manage packs within a project. It is also used to display the palette.
 struct Packs {
 
@@ -110,8 +114,8 @@ struct Packs {
         auto packList = project.display.packs;
 
         // Add tiles
-        tilesFrame.children = cast(GluiNode[]) packList.listCells[]
-            .map!(type => button(type, () => setCellBrush(type)))
+        tilesFrame.children = packList.listCells[]
+            .map!(type => cast(GluiNode) button(type, () => setCellBrush(type)))
             .array;
 
         // Clear cache

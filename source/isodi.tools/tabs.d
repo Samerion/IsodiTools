@@ -8,6 +8,10 @@ import isodi.tools.project;
 
 public import std.typecons : Flag, Yes, No;
 
+
+@safe:
+
+
 /// This struct manages all tabs and open projects within a window.
 struct Tabs {
 

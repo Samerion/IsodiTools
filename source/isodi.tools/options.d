@@ -8,6 +8,10 @@ import std.exception;
 import isodi.tools.themes;
 import isodi.tools.project;
 
+
+@safe:
+
+
 /// Saved options for the project.
 struct ProjectOptions {
 
