@@ -3,6 +3,11 @@ module isodi.tools.main;
 import glui;
 import raylib;
 
+import std.conv;
+
+import core.time;
+import core.thread;
+
 import isodi.raylib.bind;
 import isodi.raylib.camera;
 
@@ -19,10 +24,11 @@ import isodi.tools.open_file;
 
 void main(string[] argv) @trusted {
 
+    const waitTime = 1.seconds / 60;
+
     // Prepare the window
     SetTraceLogLevel(TraceLogType.LOG_WARNING);
     SetConfigFlags(ConfigFlag.FLAG_WINDOW_RESIZABLE);
-    SetTargetFPS(60);
     InitWindow(1600, 900, "Isodi Tools");
     SetWindowMinSize(800, 600);
     SetExitKey(0);
@@ -63,6 +69,11 @@ void main(string[] argv) @trusted {
 
         // Process general input
         processInput(ui, tabs);
+
+        // Wait some time to reduce FPS
+        // Should wait a while less if last frame took too long to render
+        const time = waitTime*2 - to!long(GetFrameTime*1000).msecs;
+        if (time > 0.seconds) Thread.sleep(time);
 
     }
 
