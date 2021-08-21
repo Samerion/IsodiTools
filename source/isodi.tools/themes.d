@@ -42,6 +42,18 @@ shared static this() {
 
             backgroundColor = Colors.WHITE;
             margin.sideY = 0;
+            padding.sideY = 0;
+
+        };
+
+        GluiTextInput.styleAdd!q{
+
+            margin.sideY = 0;
+
+            backgroundColor = Color(0xee, 0xee, 0xee, 0xff);
+
+            emptyStyleAdd;
+            focusStyleAdd.backgroundColor = Color(0xdd, 0xdd, 0xdd, 0xff);
 
         };
 
@@ -80,10 +92,11 @@ shared static this() {
 
         backgroundColor = Color(0xdd, 0xdd, 0xdd, 0xff);
 
-        GluiFrame.styleAdd.padding.sideX = 4;
+        GluiFrame.styleAdd.padding.sideLeft = 4;
         GluiButton!().styleAdd!q{
 
-            padding.sideX = 8;
+            padding.sideX = 10;
+            margin.sideLeft = 8;
 
             hoverStyleAdd.backgroundColor = Color(0xbb, 0xbb, 0xbb, 0xff);
             focusStyleAdd.backgroundColor = Color(0xcc, 0xcc, 0xcc, 0xff);

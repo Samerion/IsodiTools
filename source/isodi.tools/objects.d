@@ -32,7 +32,7 @@ struct Objects {
         GluiFrame modelList;
 
         /// The skeleton editor node
-        GluiFrame skeletonEditor;
+        Tree skeletonEditor;
 
     }
 
@@ -69,7 +69,7 @@ struct Objects {
             // Skeleton editor
             makeTab("Skeleton editor",
 
-                skeletonEditor = vscrollFrame(
+                skeletonEditor = new Tree(
                     .layout!(1, "fill"), objectTabTheme,
 
                     label("Pick a model to\nedit its skeleton..."),
@@ -95,13 +95,17 @@ struct Objects {
 
                 // Brush size control
                 hframe(
+                    .layout!"fill",
                     label("Brush size:"),
-                    brushSizeInput = textInput("", () {
+                    brushSizeInput = textInput(
+                        .layout!(1, "fill"), "",
+                        () {
 
-                        try project.brushSize = brushSizeInput.value.to!uint;
-                        catch (ConvException) { }
+                            try project.brushSize = brushSizeInput.value.to!uint;
+                            catch (ConvException) { }
 
-                    }),
+                        }
+                    ),
                 ),
 
             )),

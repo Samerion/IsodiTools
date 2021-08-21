@@ -17,6 +17,7 @@ import isodi.raylib.display;
 import isodi.tools.packs;
 import isodi.tools.objects;
 import isodi.tools.options;
+import isodi.tools.skeleton;
 
 
 @safe:
@@ -241,7 +242,7 @@ class Project {
 
                 "Edit skeleton", delegate {
 
-                    // objects.skeletonEditor;
+                    makeSkeletonEditor(objects.skeletonEditor);
 
                 }
 
