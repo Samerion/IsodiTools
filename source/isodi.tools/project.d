@@ -228,6 +228,17 @@ class Project {
 
         }
 
+        // Painting models
+        else if (auto model = cast(isodi.Model) _brush) {
+
+            import isodi.raylib.model : RaylibModel;
+
+            auto newModel = cast(RaylibModel) display.addModel(position);
+            newModel.copySkeleton(model);
+            newModel.boneDebug = true;
+
+        }
+
     }
 
     /// Erase objects matching brush type.

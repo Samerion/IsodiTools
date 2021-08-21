@@ -67,7 +67,7 @@ struct Packs {
                     button(
                         .layout!"fill",
                         "Empty skeleton",
-                        delegate { }
+                        () => setModelBrush(null),
                     ),
                 ),
             ),
@@ -133,9 +133,9 @@ struct Packs {
             .array;
 
         // Add skeletons
-        skeletonsContent.children = [
-            // Note: Isodi has no listSkeletons yet
-        ];
+        skeletonsContent.children = packList.listSkeletons[]
+            .map!(type => cast(GluiNode) button(type, () => setModelBrush(type)))
+            .array;
 
         // Resize the tree
         rootFrame.updateSize();
@@ -152,6 +152,20 @@ struct Packs {
         cell.color = Color(0xcc, 0xaa, 0xff, 0xee);
 
         project.brush = cell;
+
+    }
+
+    /// Assign a new model as a brush.
+    private void setModelBrush(string skeletonType) {
+
+        import isodi.raylib.model : RaylibModel;
+
+        /// Create the model
+        auto model = new RaylibModel(project.display, skeletonType);
+        model.positionRef.height.depth = 0;
+        model.boneDebug = true;
+
+        project.brush = model;
 
     }
 
