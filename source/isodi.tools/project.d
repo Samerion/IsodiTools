@@ -237,7 +237,15 @@ class Project {
             newModel.copySkeleton(model);
             newModel.boneDebug = true;
 
-            objects.addNode(objects.modelList, format!"Model %s"(newModel.id));
+            objects.objectList.addNode(objects.modelList, format!"Model %s"(newModel.id),
+
+                "Edit skeleton", delegate {
+
+                    // objects.skeletonEditor;
+
+                }
+
+            );
 
         }
 

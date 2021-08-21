@@ -20,8 +20,8 @@ immutable {
     /// Theme for dropdowns and context menus, eg. in the object manager.
     Theme dropdownTheme;
 
-    /// Theme for object manager tree children to have them indented.
-    Theme objectChildTheme;
+    /// Theme for tree children to have them indented.
+    Theme treeChildTheme;
 
     /// Theme for object manager tab bar.
     Theme objectTabBarTheme;
@@ -70,7 +70,7 @@ shared static this() {
 
     };
 
-    objectChildTheme = theme.makeTheme!q{
+    treeChildTheme = theme.makeTheme!q{
 
         GluiFrame.styleAdd.padding.sideLeft = 12;
 

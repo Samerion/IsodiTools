@@ -8,6 +8,8 @@ import std.path;
 import std.array;
 import std.format;
 
+import isodi : Model;
+import isodi.tools.tree;
 import isodi.tools.themes;
 import isodi.tools.project;
 
@@ -23,16 +25,21 @@ struct Objects {
         /// Frame containing the object manager.
         GluiFrame rootFrame;
 
+        /// Main object list.
+        Tree objectList;
+
         /// List of models in the project.
         GluiFrame modelList;
+
+        /// The skeleton editor node
+        GluiFrame skeletonEditor;
 
     }
 
     private {
 
         Project project;
-
-        GluiFrame objectList, toolOptions, skeletonEditor;
+        GluiFrame toolOptions;
 
     }
 
@@ -53,7 +60,7 @@ struct Objects {
             // Object list
             makeTab("Objects",
 
-                objectList = vscrollFrame(
+                objectList = new Tree(
                     .layout!(1, "fill"), objectTabTheme,
                 ),
 
@@ -64,6 +71,8 @@ struct Objects {
 
                 skeletonEditor = vscrollFrame(
                     .layout!(1, "fill"), objectTabTheme,
+
+                    label("Pick a model to\nedit its skeleton..."),
                 ),
 
             ),
@@ -119,7 +128,7 @@ struct Objects {
 
         }
 
-        auto projectNode = addNode("Project",
+        auto projectNode = objectList.addNode("Project",
 
             "Save", () {
 
@@ -160,81 +169,16 @@ struct Objects {
             //"Normalize tilemap", () { },
         );
 
-        modelList = addNode(projectNode, "Models");
+        modelList = objectList.addNode(projectNode, "Models");
 
         // TODO add a proper layer support, this is fake
-        addNode(projectNode, "Layer 1",
+        objectList.addNode(projectNode, "Layer 1",
             //"Export layer tilemap", () { },
             //"Normalize layer tilemap", () { },
             //"Group", () { },
             //"Merge down", () { },
             //"Move", () { },
         );
-
-    }
-
-    /// Add a node to the object tree.
-    /// Params:
-    ///     parent  = Parent object. Adds to root if not present.
-    ///     name    = Name of the object.
-    ///     options = Context menu options defined by a list of pairs `(string, void delegate())` representing option
-    ///               name and a trigger on picking.
-    GluiFrame addNode(Ts...)(string name, Ts options) {
-
-        return addNode(objectList, name, options);
-
-    }
-
-    /// Ditto
-    GluiFrame addNode(Ts...)(GluiFrame parent, string name, Ts options) {
-
-        import std.format : format;
-        import std.functional : toDelegate;
-
-        auto fillH = layout!("fill", "start");
-
-        GluiFrame result, dropdown;
-
-        // Create the node
-        parent ~= result = vframe(
-            fillH,
-            parent is objectList
-                ? theme
-                : objectChildTheme,
-
-            // Add a button
-            button(fillH, name, () {
-
-                // Toggle the dropdown
-                dropdown.toggleShow();
-                dropdown.updateSize();
-
-            }),
-
-            // And a dropdown
-            dropdown = vframe(fillH, dropdownTheme),
-        );
-
-        // Hide the dropdown
-        dropdown.hide();
-
-        // Add options
-        static foreach (i, T; Ts) {
-
-            // Ignore odd indexes
-            static if (i % 2 == 0) {
-
-                static assert(is(T == string), format!"T argument %s must be a string, got %s"(i, typeid(T)));
-                static assert((i + 1) < Ts.length, "There must be an even number of T arguments");
-
-                // Add an option
-                dropdown ~= button(fillH, options[i], options[i+1].toDelegate);
-
-            }
-
-        }
-
-        return result;
 
     }
 
