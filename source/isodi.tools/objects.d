@@ -18,14 +18,21 @@ import isodi.tools.project;
 /// This struct is used to manage objects within an Isodi display.
 struct Objects {
 
-    /// Frame containing the object manager
-    GluiFrame rootFrame;
+    public {
+
+        /// Frame containing the object manager.
+        GluiFrame rootFrame;
+
+        /// List of models in the project.
+        GluiFrame modelList;
+
+    }
 
     private {
 
         Project project;
-        GluiFrame objectList, toolOptions;
-        GluiFrame modelList;
+
+        GluiFrame objectList, toolOptions, skeletonEditor;
 
     }
 
@@ -41,15 +48,30 @@ struct Objects {
         // Make the frame
         rootFrame = vframe(
             theme,
-            layout(NodeAlign.end, NodeAlign.fill),
+            layout!("end", "fill"),
 
             // Object list
-            objectList = vframe(
-                layout!(1, "fill", "start"),
+            makeTab("Objects",
+
+                objectList = vscrollFrame(
+                    .layout!(1, "fill"), objectTabTheme,
+                ),
+
+            ),
+
+            // Skeleton editor
+            makeTab("Skeleton editor",
+
+                skeletonEditor = vscrollFrame(
+                    .layout!(1, "fill"), objectTabTheme,
+                ),
+
             ),
 
             // Tool options
-            toolOptions = vframe(
+            makeTab("Tool options", toolOptions = vframe(
+
+                .layout!(1, "fill"), objectTabTheme,
 
                 // Toggle depth locking
                 depthLockInput = button("Lock depth", () {
@@ -71,10 +93,9 @@ struct Objects {
                         catch (ConvException) { }
 
                     }),
-                )
+                ),
 
-            ),
-
+            )),
 
         );
 
@@ -177,6 +198,9 @@ struct Objects {
         // Create the node
         parent ~= result = vframe(
             fillH,
+            parent is objectList
+                ? theme
+                : objectChildTheme,
 
             // Add a button
             button(fillH, name, () {
@@ -211,6 +235,43 @@ struct Objects {
         }
 
         return result;
+
+    }
+
+    private GluiFrame makeTab(string name, GluiNode content) {
+
+        GluiButton!() collapseButton;
+        GluiFrame result;
+
+        content.layout = layout!(1, "fill");
+
+        return result = vframe(
+            .layout!(1, "fill"),
+
+            // Top bar
+            hframe(
+                .layout!("fill", "start"),
+                objectTabBarTheme,
+
+                label(.layout!1, name),
+                collapseButton = button("-", {
+
+                    // Toggle content visibility
+                    content.toggleShow();
+
+                    // Expand the tab if hidden
+                    result.layout.expand = !content.hidden;
+
+                    // Update button text
+                    collapseButton.text = content.hidden ? "+" : "-";
+
+                }),
+            ),
+
+            // Content
+            content,
+
+        );
 
     }
 

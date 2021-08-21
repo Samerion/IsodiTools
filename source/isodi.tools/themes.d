@@ -20,6 +20,15 @@ immutable {
     /// Theme for dropdowns and context menus, eg. in the object manager.
     Theme dropdownTheme;
 
+    /// Theme for object manager tree children to have them indented.
+    Theme objectChildTheme;
+
+    /// Theme for object manager tab bar.
+    Theme objectTabBarTheme;
+
+    /// Theme for object manager tab content.
+    Theme objectTabTheme;
+
     /// Theme for debugging stuff.
     debug Theme debugTheme;
 
@@ -38,7 +47,7 @@ shared static this() {
 
     };
 
-    emptyTheme = makeTheme!q{
+    emptyTheme = theme.makeTheme!q{
 
         GluiFrame.styleAdd!q{
 
@@ -48,16 +57,45 @@ shared static this() {
 
     };
 
-    tooltipTheme = makeTheme!q{
+    tooltipTheme = theme.makeTheme!q{
 
         GluiFrame.styleAdd.backgroundColor = Color(0, 0, 0, 0xaa);
         GluiLabel.styleAdd.textColor = Color(0xff, 0xff, 0xff, 0xff);
 
     };
 
-    dropdownTheme = makeTheme!q{
+    dropdownTheme = theme.makeTheme!q{
 
-        GluiFrame.styleAdd.backgroundColor = Color(0xcc, 0xcc, 0xcc, 0xff);
+        GluiButton!().styleAdd.backgroundColor = Color(0xee, 0xee, 0xee, 0xff);
+
+    };
+
+    objectChildTheme = theme.makeTheme!q{
+
+        GluiFrame.styleAdd.padding.sideLeft = 12;
+
+    };
+
+    objectTabBarTheme = theme.makeTheme!q{
+
+        backgroundColor = Color(0xdd, 0xdd, 0xdd, 0xff);
+
+        GluiFrame.styleAdd.padding.sideX = 4;
+        GluiButton!().styleAdd!q{
+
+            padding.sideX = 8;
+
+            hoverStyleAdd.backgroundColor = Color(0xbb, 0xbb, 0xbb, 0xff);
+            focusStyleAdd.backgroundColor = Color(0xcc, 0xcc, 0xcc, 0xff);
+            pressStyleAdd.backgroundColor = Color(0xaa, 0xaa, 0xaa, 0xff);
+
+        };
+
+    };
+
+    objectTabTheme = theme.makeTheme!q{
+
+        GluiFrame.styleAdd.padding = 6;
 
     };
 
