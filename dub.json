@@ -4,7 +4,7 @@
 	],
 	"copyright": "Copyright © 2021, Soaku",
 	"dependencies": {
-		"glui": "~>0.4.0",
+		"glui": ">=0.0.0",
 		"isodi": "~>0.4.2",
 		"rcdata": ">=0.0.0"
 	},

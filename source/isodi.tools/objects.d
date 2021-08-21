@@ -25,6 +25,7 @@ struct Objects {
 
         Project project;
         GluiFrame objectList, toolOptions;
+        GluiFrame modelList;
 
     }
 
@@ -137,6 +138,8 @@ struct Objects {
 
             //"Normalize tilemap", () { },
         );
+
+        modelList = addNode(projectNode, "Models");
 
         // TODO add a proper layer support, this is fake
         addNode(projectNode, "Layer 1",
