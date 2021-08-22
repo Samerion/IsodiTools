@@ -154,8 +154,7 @@ struct Objects {
 
             "Options", () {
 
-                project.optionsFrame.show();
-                project.optionsFrame.updateSize();
+                project.showModal(project.optionsFrame);
 
             },
 
@@ -209,6 +208,7 @@ struct Objects {
 
                     // Expand the tab if hidden
                     result.layout.expand = !content.hidden;
+                    result.updateSize();
 
                     // Update button text
                     collapseButton.text = content.hidden ? "+" : "-";

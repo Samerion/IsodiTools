@@ -10,24 +10,25 @@ import isodi.tools.themes;
 @safe:
 
 
-void makeSkeletonEditor(ref Tree tree) {
-
-    GluiTextInput skeletonInput;
+void makeSkeletonEditor(ref Tree tree, Model model) {
 
     tree.children = [
-        skeletonInput = textInput(
-            .layout!"fill",
-            "Skeleton type...", delegate { }
-        ),
-        hframe(
-            .layout!(1, "fill"),
-            theme,
-            button(.layout!(1, "center"), "Load", delegate { }),
-            button(.layout!(1, "center"), "Save", delegate { }),
-        ),
+        button("Construct new", delegate { }),
+        label(),
     ];
 
-    skeletonInput.size.x = 100;
+    GluiFrame[] nodes;
+
+    foreach (i, bone; model.skeletonBones) {
+
+        // Get the parent
+        auto parent = i == 0
+            ? tree
+            : nodes[bone.parent];
+
+        nodes ~= tree.addNode(parent, bone.id);
+
+    }
 
     tree.updateSize();
 

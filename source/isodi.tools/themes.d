@@ -52,7 +52,7 @@ shared static this() {
 
             backgroundColor = Color(0xee, 0xee, 0xee, 0xff);
 
-            emptyStyleAdd;
+            emptyStyleAdd.textColor = Color(0, 0, 0, 0xaa);
             focusStyleAdd.backgroundColor = Color(0xdd, 0xdd, 0xdd, 0xff);
 
         };
@@ -84,7 +84,12 @@ shared static this() {
 
     treeChildTheme = theme.makeTheme!q{
 
-        GluiFrame.styleAdd.padding.sideLeft = 12;
+        GluiFrame.styleAdd!q{
+
+            backgroundColor = Color(0, 0, 0, 0x11);
+            padding.sideLeft = 8;
+
+        };
 
     };
 

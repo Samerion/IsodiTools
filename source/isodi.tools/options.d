@@ -42,9 +42,8 @@ class ProjectOptionsFrame : GluiFrame {
 
         // Create the node
         super(
-
-            .theme,
             .layout!(1, "center"),
+            .theme,
 
             label(
                 .layout!"center",
@@ -71,7 +70,7 @@ class ProjectOptionsFrame : GluiFrame {
             button(
                 .layout!(1, "center"),
                 "Close",
-                { hide(); },
+                { remove(); },
             ),
 
         );

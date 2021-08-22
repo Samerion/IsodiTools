@@ -34,10 +34,11 @@ GluiFrame createUI(ref Tabs tabs) {
             drawingSpace = frameHoverButton(
                 layout!(1, "fill"),
 
-                vframe(),
+                // Modal windows (placeholder)
+                vspace(.layout!1),
 
                 statusBar = hframe(
-                    layout!(1, "fill", "end"),
+                    layout!("fill", "end"),
                     tooltipTheme,
 
                     label(),  // (placeholder)
@@ -50,9 +51,6 @@ GluiFrame createUI(ref Tabs tabs) {
                 () {
 
                     import std.format : format;
-
-                    // Ignore if there is a popup visible
-                    if (!tabs.frames.options.hidden) return;
 
                     // Update the brush
                     tabs.openProject.updateBrush();
@@ -83,8 +81,8 @@ GluiFrame createUI(ref Tabs tabs) {
         tabs.frames.palette = cast(GluiFrame*) &mainSpace.children.childRef(0);
         tabs.frames.objects = cast(GluiFrame*) &mainSpace.children.childRef(2);
 
-        tabs.frames.status  = cast(GluiLabel*) &statusBar.children.childRef(0);
-        tabs.frames.options = cast(GluiFrame*) &drawingSpace.children.childRef(0);
+        tabs.frames.status = cast(GluiLabel*) &statusBar.children.childRef(0);
+        tabs.frames.modals = cast(GluiSpace*) &drawingSpace.children.childRef(0);
 
     }();
 

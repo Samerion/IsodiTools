@@ -49,6 +49,9 @@ class Project {
     /// Project options.
     ProjectOptions options;
 
+    /// Modal list.
+    GluiSpace modalsSpace;
+
     /// UI for the options modal.
     GluiFrame optionsFrame;
 
@@ -102,6 +105,10 @@ class Project {
         objects = Objects(this);
         status = label();
 
+        // Modals
+        modalsSpace = vspace(
+            .layout!(1, "fill"),
+        );
         optionsFrame = new ProjectOptionsFrame(this);
 
     }
@@ -130,6 +137,16 @@ class Project {
 
         // Finally, draw the display
         display.draw();
+
+    }
+
+    /// Show a modal in the project window.
+    void showModal(GluiNode modalNode) {
+
+        modalsSpace.children = [modalNode];
+        modalsSpace.updateSize();
+        modalNode.toRemove = false;  // TODO: correct this in Glui
+        modalNode.show();
 
     }
 
@@ -240,11 +257,7 @@ class Project {
 
             objects.objectList.addNode(objects.modelList, format!"Model %s"(newModel.id),
 
-                "Edit skeleton", delegate {
-
-                    makeSkeletonEditor(objects.skeletonEditor);
-
-                }
+                "Edit skeleton", () => objects.skeletonEditor.makeSkeletonEditor(model),
 
             );
 
