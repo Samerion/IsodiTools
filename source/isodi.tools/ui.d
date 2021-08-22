@@ -94,6 +94,7 @@ GluiFrame createUI(ref Tabs tabs) {
         result,
 
         // File pickers
+        // TODO consider removing, tabs.frames.modals should be enough and more extensible
         tabs.frames.fileOpener = filePicker(
             theme,
             "Load a file...",

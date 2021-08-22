@@ -106,9 +106,7 @@ class Project {
         status = label();
 
         // Modals
-        modalsSpace = vspace(
-            .layout!(1, "fill"),
-        );
+        modalsSpace = onionFrame(.layout!(1, "center"));
         optionsFrame = new ProjectOptionsFrame(this);
 
     }
@@ -143,7 +141,7 @@ class Project {
     /// Show a modal in the project window.
     void showModal(GluiNode modalNode) {
 
-        modalsSpace.children = [modalNode];
+        modalsSpace.children ~= modalNode;
         modalsSpace.updateSize();
         modalNode.toRemove = false;  // TODO: correct this in Glui
         modalNode.show();
@@ -257,7 +255,7 @@ class Project {
 
             objects.objectList.addNode(objects.modelList, format!"Model %s"(newModel.id),
 
-                "Edit skeleton", () => objects.skeletonEditor.makeSkeletonEditor(model),
+                "Edit skeleton", () => this.makeSkeletonEditor(objects.skeletonEditor, model),
 
             );
 

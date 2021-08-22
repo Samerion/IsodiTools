@@ -14,6 +14,9 @@ immutable {
     /// Theme applied to the root node only so there is an empty space.
     Theme emptyTheme;
 
+    /// Theme for modals in the program.
+    Theme modalTheme;
+
     /// Theme applied to tooltips — white text on a half-transparent black background.
     Theme tooltipTheme;
 
@@ -64,6 +67,21 @@ shared static this() {
         GluiFrame.styleAdd!q{
 
             backgroundColor = Color(0, 0, 0, 0);
+
+        };
+
+    };
+
+    // TODO
+    modalTheme = theme.makeTheme!q{
+
+        GluiFrame.styleAdd.padding = 6;
+        GluiButton!().styleAdd!q{
+
+            backgroundColor = Color(0xee, 0xee, 0xee, 0xff);
+
+            margin.sideX = 4;
+            padding.sideX = 6;
 
         };
 
