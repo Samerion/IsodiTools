@@ -1,4 +1,5 @@
-module isodi.tools.skeleton;
+/// UI components for managing skeletons.
+module isodi.tools.skeleton.ui;
 
 import glui;
 import isodi;
@@ -9,6 +10,9 @@ import std.string;
 import isodi.tools.tree;
 import isodi.tools.themes;
 import isodi.tools.project;
+
+import isodi.tools.skeleton.structs;
+import isodi.tools.skeleton.construct;
 
 
 @safe:
@@ -47,11 +51,19 @@ private GluiFrame constructSkeletonWindow(Project project, Model model) {
     GluiFrame root;
     GluiFilePicker imagePicker;
     GluiLabel summaryLabel;
-
-    string[] bonePaths;
+    GluiFrame boneEditor;
+    BoneEditorRow[] boneEditorRows;
 
     const pickerText = "Select directory with PNG images to import";
-    enum boneCountText = "Will create a skeleton with %s bones.";
+    enum boneCountText = "Will create a skeleton with %s bones. ";
+    enum targetPackText = "Bones will be exported to the first pack in the list, %s.";
+
+    // Fail if there's no packs
+    if (project.display.packs.length == 0) {
+
+        return failConstruction("Constructing skeletons requires at least one pack in the project.");
+
+    }
 
     imagePicker = filePicker(.modalTheme, pickerText, () @trusted {
 
@@ -69,12 +81,20 @@ private GluiFrame constructSkeletonWindow(Project project, Model model) {
         }
 
         // Find bone textures
-        bonePaths = dirEntries(path, SpanMode.shallow)
+        boneEditorRows = dirEntries(path, SpanMode.shallow)
             .map!"a.name"
             .filter!(a => a.extension == ".png")
+            .map!(a => BoneEditorRow(a))
             .array;
 
-        summaryLabel.text = format!boneCountText(bonePaths.length);
+        boneEditor.children = boneEditorRows
+            .map!(a => cast(GluiNode) a.root)
+            .array;
+
+        summaryLabel.text = format!boneCountText(boneEditorRows.length)
+            ~ format!targetPackText(project.display.packs[0].name);
+
+        root.updateSize();
 
 
     });
@@ -89,13 +109,29 @@ private GluiFrame constructSkeletonWindow(Project project, Model model) {
         button(pickerText, { project.showModal = imagePicker; }),
 
         summaryLabel = label(format!boneCountText(0)),
+        boneEditor = vframe(),
 
         hframe(
             .layout!"end",
             button("Cancel", { root.remove(); }),
             button("Save", {
 
-                project.showModal = project.confirmConstructionWindow(model, bonePaths);
+                import std.array, std.algorithm;
+
+                try {
+
+                    // Get each bone
+                    const bones = boneEditorRows.map!"a.result".array;
+                    project.showModal = project.confirmConstructionWindow(root, model, bones[]);
+
+                }
+
+                // Failed, something's wrong with the bones
+                catch (SkeletonException exc) {
+
+                    project.showModal = failConstruction(exc.msg);
+
+                }
 
             }),
         ),
@@ -104,7 +140,9 @@ private GluiFrame constructSkeletonWindow(Project project, Model model) {
 
 }
 
-private GluiFrame confirmConstructionWindow(Project project, Model model, string[] bonePaths) {
+private GluiFrame confirmConstructionWindow(Project project, GluiFrame parentModal, Model model,
+    const ConstructedBone[] bones)
+do {
 
     GluiFrame root;
     return root = vframe(
@@ -114,15 +152,37 @@ private GluiFrame confirmConstructionWindow(Project project, Model model, string
         label(.layout!"center", "Confirm construction?"),
         label("Existing skeleton assigned to the model, will be replaced with the constructed one."),
         label(format!"%s bones will be removed and %s bones will be added."(
-            model.skeletonBones.length, bonePaths.length
+            model.skeletonBones.length, bones.length
         )),
 
         hframe(
             .layout!"end",
             button("Go back", { root.remove(); }),
-            button("Replace", { root.remove(); }),
+            button("Replace", {
+
+                // Perform the action
+                constructSkeleton(model, project.display.packs[0], bones);
+
+                // Close the modals
+                root.remove();
+                parentModal.remove();
+
+            }),
         ),
 
+    );
+
+}
+
+private GluiFrame failConstruction(string message) {
+
+    GluiFrame root;
+    return root = vframe(
+        .layout!(1, "center"),
+        .modalTheme,
+
+        label(message),
+        button(.layout!"end", "Close", { root.remove(); }),
     );
 
 }

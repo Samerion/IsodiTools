@@ -160,7 +160,16 @@ struct Packs {
 
         import isodi.raylib.model : RaylibModel;
 
-        /// Create the model
+        // Fail if there are no packs
+        if (project.display.packs.length == 0) {
+
+            project.status.text = "Can't create a model, project has no packs!";
+            project.status.updateSize();
+            return;
+
+        }
+
+        // Create the model
         auto model = new RaylibModel(project.display, skeletonType);
         model.positionRef.height.depth = 0;
         model.boneDebug = true;
