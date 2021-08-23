@@ -65,6 +65,8 @@ private GluiFrame constructSkeletonWindow(Project project, Model model) {
 
     }
 
+    auto pack = project.display.packs[0];
+
     imagePicker = filePicker(.modalTheme, pickerText, () @trusted {
 
         import std.file, std.path, std.array, std.algorithm;
@@ -84,7 +86,7 @@ private GluiFrame constructSkeletonWindow(Project project, Model model) {
         boneEditorRows = dirEntries(path, SpanMode.shallow)
             .map!"a.name"
             .filter!(a => a.extension == ".png")
-            .map!(a => BoneEditorRow(a))
+            .map!(a => BoneEditorRow(a, pack))
             .array;
 
         boneEditor.children = boneEditorRows
@@ -92,7 +94,7 @@ private GluiFrame constructSkeletonWindow(Project project, Model model) {
             .array;
 
         summaryLabel.text = format!boneCountText(boneEditorRows.length)
-            ~ format!targetPackText(project.display.packs[0].name);
+            ~ format!targetPackText(pack.name);
 
         root.updateSize();
 

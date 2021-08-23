@@ -1,6 +1,7 @@
 module isodi.tools.skeleton.structs;
 
 import glui;
+import isodi.pack;
 
 import std.path;
 import std.string;
@@ -19,9 +20,17 @@ class SkeletonException : Exception {
 /// Represents a bone to be constructed.
 struct ConstructedBone {
 
+    /// Path to the source image of the bone.
     string imagePath;
+
+    /// Type of the bone, ex. "knee".
     string bone;
+
+    /// Bone variant, name of this bone "style".
     string variant;
+
+    /// Number of angles/perspectives provided in the source.
+    uint angles;
 
 }
 
@@ -29,10 +38,13 @@ struct ConstructedBone {
 struct BoneEditorRow {
 
     string imagePath;
+    Pack targetPack;
+
     GluiFrame root;
     GluiTextInput boneInput, variantInput;
 
-    this(string path) {
+    this(string path, ref Pack pack) {
+        // ref to avoid copying for the constructor
 
         import std.algorithm;
 
@@ -40,6 +52,7 @@ struct BoneEditorRow {
         const segments = base.findSplit("_");
 
         imagePath = path;
+        targetPack = pack;
 
         root = hframe(
             .layout!"fill",
@@ -59,10 +72,22 @@ struct BoneEditorRow {
 
         const path = imagePath.baseName;
 
-        enforcex(boneInput.value.length,    path.format!"Lacking bone type for image %s");
-        enforcex(variantInput.value.length, path.format!"Lacking bone variant for image %s");
+        // Get the values
+        ConstructedBone result;
+        result.imagePath = imagePath;
+        result.bone      = boneInput.value;
+        result.variant   = variantInput.value;
 
-        return ConstructedBone(imagePath, boneInput.value, variantInput.value);
+        // Check them
+        enforcex(result.bone.length,    path.format!"Lacking bone type for image %s");
+        enforcex(result.variant.length, path.format!"Lacking bone variant for image %s");
+
+        // Find out angle number for the bone
+        const options = targetPack.getOptions(format!"models/bone/%s/%s.png"(result.bone, result.variant));
+
+        result.angles = options.angles;
+
+        return result;
 
     }
 
