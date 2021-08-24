@@ -162,12 +162,17 @@ do {
             button("Go back", { root.remove(); }),
             button("Replace", {
 
+                auto targetPack = project.display.packs[0];
+
                 // Perform the action
-                constructSkeleton(model, project.display.packs[0], bones);
+                constructSkeleton(model, targetPack, bones);
 
                 // Close the modals
                 root.remove();
                 parentModal.remove();
+
+                // Add a status bar info
+                project.status.text = format!"Images exported to pack %s"(targetPack.name);
 
             }),
         ),

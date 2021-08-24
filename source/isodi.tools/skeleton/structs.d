@@ -32,6 +32,13 @@ struct ConstructedBone {
     /// Number of angles/perspectives provided in the source.
     uint angles;
 
+    /// Path to the image within the pack.
+    string packPath() const {
+
+        return format!"models/bone/%s/%s.png"(bone, variant);
+
+    }
+
 }
 
 /// Represents a row in the bone editor.
