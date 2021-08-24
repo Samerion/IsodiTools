@@ -2,6 +2,7 @@ module isodi.tools.skeleton.construct;
 
 import raylib;
 
+import std.file;
 import std.path;
 import std.string;
 
@@ -16,12 +17,21 @@ import isodi.tools.skeleton.structs;
 
 /// Construct a new skeleton from images.
 /// Params:
-///     model      = Model to load the skeleton into.
 ///     pack       = Pack to load the bones into.
 ///     boneImages = Images to create bones from.
-void constructSkeleton(isodi.Model model, Pack pack, const ConstructedBone[] bones) @trusted {
+SkeletonNode[] constructSkeleton(Pack pack, const ConstructedBone[] bones) @trusted {
 
-    SkeletonNode[] nodes;
+    SkeletonNode[] nodes = [
+
+        {
+            hidden: true,
+            name: "root",
+            id: "root",
+            variants: [""],
+            boneEnd: [0, 1, 0],
+        }
+
+    ];
 
     // TODO: Ensure each image has the same size
     // TODO: Ensure no bone would get overriden
@@ -44,16 +54,23 @@ void constructSkeleton(isodi.Model model, Pack pack, const ConstructedBone[] bon
             id: bone.bone,
             variants: [bone.variant],
 
-            // TODO boneStart, boneEnd, texturePosition
-
+            boneStart: [0, image.height - opaquePart.y, 0],
+            boneEnd: [0, opaquePart.h, 0],
+            texturePosition: [-opaquePart.w/2, 0, 0],
         };
 
         nodes ~= node;
 
+        // Ensure the path exists
+        const exportPath = pack.path.buildPath(bone.packPath);
+        mkdirRecurse(exportPath.dirName);
+
         // Output the image
-        ExportImage(result, pack.path.buildPath(bone.packPath).toStringz);
+        ExportImage(result, exportPath.toStringz);
 
     }
+
+    return nodes;
 
 }
 

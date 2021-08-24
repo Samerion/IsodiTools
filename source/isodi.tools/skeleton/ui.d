@@ -23,7 +23,7 @@ void makeSkeletonEditor(Project project, ref Tree tree, Model model) {
     tree.children = [
         button("Construct new", {
 
-            project.showModal = project.constructSkeletonWindow(model);
+            project.showModal = project.constructSkeletonWindow(tree, model);
 
         }),
         label(),
@@ -46,7 +46,7 @@ void makeSkeletonEditor(Project project, ref Tree tree, Model model) {
 
 }
 
-private GluiFrame constructSkeletonWindow(Project project, Model model) {
+private GluiFrame constructSkeletonWindow(Project project, ref Tree tree, Model model) {
 
     GluiFrame root;
     GluiFilePicker imagePicker;
@@ -124,7 +124,7 @@ private GluiFrame constructSkeletonWindow(Project project, Model model) {
 
                     // Get each bone
                     const bones = boneEditorRows.map!"a.result".array;
-                    project.showModal = project.confirmConstructionWindow(root, model, bones[]);
+                    project.showModal = project.confirmConstructionWindow(root, tree, model, bones[]);
 
                 }
 
@@ -142,7 +142,7 @@ private GluiFrame constructSkeletonWindow(Project project, Model model) {
 
 }
 
-private GluiFrame confirmConstructionWindow(Project project, GluiFrame parentModal, Model model,
+private GluiFrame confirmConstructionWindow(Project project, GluiFrame parentModal, ref Tree tree, Model model,
     const ConstructedBone[] bones)
 do {
 
@@ -165,7 +165,11 @@ do {
                 auto targetPack = project.display.packs[0];
 
                 // Perform the action
-                constructSkeleton(model, targetPack, bones);
+                auto nodes = constructSkeleton(targetPack, bones);
+                model.changeSkeleton(nodes);
+
+                // Rebuild the skeleton editor
+                project.makeSkeletonEditor(tree, model);
 
                 // Close the modals
                 root.remove();
