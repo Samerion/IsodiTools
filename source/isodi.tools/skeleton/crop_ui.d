@@ -1,4 +1,4 @@
-module isodi.tools.skeleton.split_ui;
+module isodi.tools.skeleton.crop_ui;
 
 import glui;
 import raylib;
@@ -7,16 +7,16 @@ import isodi;
 import isodi.resource;
 
 import isodi.tools.themes;
+import isodi.tools.skeleton.crop;
 import isodi.tools.skeleton.utils;
-import isodi.tools.skeleton.split;
 
 
 @safe:
 
 
-/// A window for spliting bones into multiple ones. For example, a pair of hands could be imported as a single bone,
-/// which is unwanted in the final model. This tool will allow splitting that bone into two.
-GluiFrame splitBoneWindow(BoneResource resource, SkeletonNode bone) {
+/// A window for cropping bones into multiple ones. For example, a pair of hands could be imported as a single bone,
+/// which is unwanted in the final model. This tool will allow cropping that bone into two.
+GluiFrame cropBoneWindow(BoneResource resource, SkeletonNode bone) {
 
     import std.array, std.range, std.algorithm;
 
@@ -25,13 +25,13 @@ GluiFrame splitBoneWindow(BoneResource resource, SkeletonNode bone) {
     auto hInput = textInput("");
 
     auto rows = iota(resource.options.angles)
-        .map!(a => cast(GluiNode) new SplitBoneRow(resource, a, wInput, hInput))
+        .map!(a => cast(GluiNode) new CropBoneRow(resource, a, wInput, hInput))
         .array;
 
     root = vscrollFrame(
         .modalTheme,
 
-        label(.layout!"center", "Split bone"),
+        label(.layout!"center", "Crop bone"),
 
         vframe(
             hframe(
@@ -53,7 +53,7 @@ GluiFrame splitBoneWindow(BoneResource resource, SkeletonNode bone) {
         hframe(
             .layout!"end",
             button("Cancel", () => root.remove()),
-            button("Perform the split", delegate { }),
+            button("Perform the crop", delegate { }),
         ),
     );
 
@@ -61,7 +61,7 @@ GluiFrame splitBoneWindow(BoneResource resource, SkeletonNode bone) {
 
 }
 
-private class SplitBoneRow : GluiFrame {
+private class CropBoneRow : GluiFrame {
 
     // TODO: cleanup
     Texture texture;

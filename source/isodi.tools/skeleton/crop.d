@@ -1,4 +1,4 @@
-module isodi.tools.skeleton.split;
+module isodi.tools.skeleton.crop;
 
 import isodi;
 import raylib;
@@ -12,7 +12,7 @@ import isodi.tools.skeleton.utils;
 alias BoneResource = Pack.Resource!string;
 
 /// Replace the bone textures, cropping each angle to given size and setting it at given position.
-void splitBone(BoneResource resource, Vector2 size, Vector2[] anglePositions) @trusted
+void cropBone(BoneResource resource, Vector2 size, Vector2[] anglePositions) @trusted
 in(resource.options.angles == anglePositions.length)
 do {
 

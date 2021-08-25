@@ -9,8 +9,8 @@ import isodi.tools.tree;
 import isodi.tools.themes;
 import isodi.tools.project;
 
+import isodi.tools.skeleton.crop_ui;
 import isodi.tools.skeleton.structs;
-import isodi.tools.skeleton.split_ui;
 import isodi.tools.skeleton.construct_ui;
 
 
@@ -43,13 +43,13 @@ void skeletonEditor(Project project, ref Tree tree, Model model) {
 
             // TODO: read the exact variant used in the model
             const options = model.getBone(localBone);
-            project.showModal = splitBoneWindow(options, localBone);
+            project.showModal = cropBoneWindow(options, localBone);
 
         };
 
         nodes ~= tree.addNode(parent, bone.id,
 
-            "Split bone", makeFunc(bone),
+            "Crop bone", makeFunc(bone),
 
         );
 
