@@ -57,9 +57,11 @@ private class SplitBoneRow : GluiFrame {
     // TODO: cleanup
     Texture texture;
     HighlightedImageView canvas;
-    GluiTextInput haInput, hbInput, vaInput, vbInput;
+    GluiTextInput xInput, yInput, wInput, hInput;
 
     this(BoneResource resource, uint angle) {
+
+        import std.conv;
 
         auto nullDelegate = delegate { };
 
@@ -70,23 +72,23 @@ private class SplitBoneRow : GluiFrame {
             canvas = new HighlightedImageView(.layout!"fill", texture, Vector2(0, 100)),
 
             hframe(
-                label("Horizontal part: "),
-                haInput = textInput("", nullDelegate),
-                label("/"),
-                hbInput = textInput("", nullDelegate),
+                label("Position: "),
+                xInput = textInput(""),
+                label(" "),
+                yInput = textInput(""),
             ),
             hframe(
-                label("Vertical part: "),
-                vaInput = textInput("", nullDelegate),
-                label("/"),
-                vbInput = textInput("", nullDelegate),
+                label("Size: "),
+                wInput = textInput(""),
+                label("x"),
+                hInput = textInput(""),
             ),
         );
 
-        haInput.value = "1";
-        hbInput.value = "1";
-        vaInput.value = "1";
-        vbInput.value = "1";
+        xInput.value = "0";
+        yInput.value = "0";
+        wInput.value = canvas.texture.width.to!string;
+        hInput.value = canvas.texture.height.to!string;
 
     }
 
@@ -94,23 +96,24 @@ private class SplitBoneRow : GluiFrame {
     Rectangle chosenArea() {
 
         import std.array, std.algorithm;
-        import std.conv, std.exception;
+        import std.conv, std.math, std.exception;
 
-        uint[4] values = [haInput, hbInput, vaInput, vbInput]
+        uint[4] values = [xInput, yInput, wInput, hInput]
 
             // Read the value
             .map!(a => a.value.to!uint.ifThrown(1))
-
-            // Prevent negative values
-            .map!(a => a == 0 ? 1 : a)
             .array;
 
-        values[0] = min(values[0], values[1]);
-        values[2] = min(values[2], values[3]);
+        // Check texture size
+        values[2] = min(values[2], texture.width);
+        values[3] = min(values[3], texture.height);
+
+        values[0] = min(values[0], values[2]);
+        values[1] = min(values[1], values[3]);
 
         return Rectangle(
-            texture.width * (values[0]-1) / values[1], texture.height * (values[2]-1) / values[3],
-            texture.width * values[0]     / values[1], texture.height * values[2]     / values[3],
+            values[0], values[1],
+            values[2], values[3],
         );
 
     }
