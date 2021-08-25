@@ -1,9 +1,7 @@
-/// UI components for managing skeletons.
-module isodi.tools.skeleton.ui;
+module isodi.tools.skeleton.construct_ui;
 
 import glui;
 import isodi;
-import isodi.resource;
 
 import std.string;
 
@@ -13,40 +11,11 @@ import isodi.tools.project;
 
 import isodi.tools.skeleton.structs;
 import isodi.tools.skeleton.construct;
-
+import isodi.tools.skeleton.editor_ui;
 
 @safe:
 
-
-void makeSkeletonEditor(Project project, ref Tree tree, Model model) {
-
-    tree.children = [
-        button("Construct new", {
-
-            project.showModal = project.constructSkeletonWindow(tree, model);
-
-        }),
-        label(),
-    ];
-
-    GluiFrame[] nodes;
-
-    foreach (i, bone; model.skeletonBones) {
-
-        // Get the parent
-        auto parent = i == 0
-            ? tree
-            : nodes[bone.parent];
-
-        nodes ~= tree.addNode(parent, bone.id);
-
-    }
-
-    tree.updateSize();
-
-}
-
-private GluiFrame constructSkeletonWindow(Project project, ref Tree tree, Model model) {
+GluiFrame constructSkeletonWindow(Project project, ref Tree tree, Model model) {
 
     GluiFrame root;
     GluiFilePicker imagePicker;
@@ -169,7 +138,7 @@ do {
                 model.changeSkeleton(nodes);
 
                 // Rebuild the skeleton editor
-                project.makeSkeletonEditor(tree, model);
+                project.skeletonEditor(tree, model);
 
                 // Close the modals
                 root.remove();
