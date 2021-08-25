@@ -21,6 +21,8 @@ GluiFrame cropBoneWindow(BoneResource resource, SkeletonNode bone) {
     import std.array, std.range, std.algorithm;
 
     GluiFrame root;
+
+    auto targetInput = textInput("");
     auto wInput = textInput("");
     auto hInput = textInput("");
 
@@ -34,11 +36,11 @@ GluiFrame cropBoneWindow(BoneResource resource, SkeletonNode bone) {
         label(.layout!"center", "Crop bone"),
 
         vframe(
-            hframe(
-                label("Target bone name: "),
-                textInput(""),
+            hspace(
+                label("New bone name: "),
+                targetInput,
             ),
-            hframe(
+            hspace(
                 label("New bone size: "),
                 wInput,
                 label("x"),
