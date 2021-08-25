@@ -43,7 +43,7 @@ void skeletonEditor(Project project, ref Tree tree, Model model) {
 
             // TODO: read the exact variant used in the model
             const options = model.getBone(localBone);
-            project.showModal = cropBoneWindow(options, localBone);
+            project.showModal = cropBoneWindow(project, options, localBone);
 
         };
 

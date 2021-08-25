@@ -16,8 +16,8 @@ alias BoneResource = Pack.Resource!string;
 
 /// Create a new bone texture, cropping each angle to given size and setting it at given position.
 /// Returns: the resulting bone texture.
-Image cropBone(BoneResource resource, Vector2 size, Vector2[] anglePositions) @trusted
-in(resource.options.angles == anglePositions.length)
+Image cropBone(BoneResource resource, Vector2 size, const Vector2[] anglePositions) @trusted
+in (resource.options.angles == anglePositions.length)
 do {
 
     import std.conv, std.string;
@@ -29,27 +29,31 @@ do {
 
     foreach (i, position; anglePositions) {
 
-        const sourceRect = Rectangle(position.x, position.y, size.x, size.y);
-        const targetRect = result.angleRect(i.to!uint, angleCount);
+        const angle = i.to!uint;
+        const sourceAngle = image.angleRect(angle, angleCount);
+        const sourceRect = Rectangle(sourceAngle.x + position.x, position.y, size.x, size.y);
+        const targetRect = result.angleRect(angle, angleCount);
 
         ImageDraw(&result, image, sourceRect, targetRect, Colors.WHITE);
 
     }
 
-    return image;
+    return result;
 
 }
 
 /// Create a new bone as a crop of another bone.
-void makeCroppedBone(ConstructedBone bone, Parameters!cropBone params) @trusted
-do {
+void makeCroppedBone(string path, Parameters!cropBone params) @trusted {
 
-    import std.stdio;
+    import std.file, std.path, std.string;
 
     // Crop the bone
     auto image = cropBone(params);
 
+    // Create the directory
+    mkdirRecurse(path.dirName);
+
     // Save the bone
-    ExportImage(image, bone.packPath.toStringz);
+    ExportImage(image, path.toStringz);
 
 }

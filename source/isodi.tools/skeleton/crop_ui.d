@@ -6,9 +6,13 @@ import raylib;
 import isodi;
 import isodi.resource;
 
+import std.traits;
+
 import isodi.tools.themes;
+import isodi.tools.project;
 import isodi.tools.skeleton.crop;
 import isodi.tools.skeleton.utils;
+import isodi.tools.skeleton.structs;
 
 
 @safe:
@@ -16,21 +20,35 @@ import isodi.tools.skeleton.utils;
 
 /// A window for cropping bones into multiple ones. For example, a pair of hands could be imported as a single bone,
 /// which is unwanted in the final model. This tool will allow cropping that bone into two.
-GluiFrame cropBoneWindow(BoneResource resource, SkeletonNode bone) {
+GluiFrame cropBoneWindow(Project project, BoneResource resource, SkeletonNode bone, string variant = null) {
+    // TODO: variant argument
 
     import std.array, std.range, std.algorithm;
 
     GluiFrame root;
 
-    auto targetInput = textInput("");
+    auto targetBoneInput = textInput("");
+    auto targetVariantInput = textInput("");
     auto wInput = textInput("");
     auto hInput = textInput("");
 
-    auto rows = iota(resource.options.angles)
-        .map!(a => cast(GluiNode) new CropBoneRow(resource, a, wInput, hInput))
-        .array;
+    targetBoneInput.value = bone.name;
+    targetVariantInput.value = bone.variants[0];  // TODO
+
+    auto table = vframe();
+    CropBoneRow[] angles;
+
+    foreach (i; 0..resource.options.angles) {
+
+        auto row = new CropBoneRow(resource, i, wInput, hInput);
+
+        table.children ~= row;
+        angles ~= row;
+
+    }
 
     root = vscrollFrame(
+        .layout!(1, "center"),
         .modalTheme,
 
         label(.layout!"center", "Crop bone"),
@@ -38,7 +56,11 @@ GluiFrame cropBoneWindow(BoneResource resource, SkeletonNode bone) {
         vframe(
             hspace(
                 label("New bone name: "),
-                targetInput,
+                targetBoneInput,
+            ),
+            hspace(
+                label("New bone variant: "),
+                targetVariantInput,
             ),
             hspace(
                 label("New bone size: "),
@@ -50,12 +72,30 @@ GluiFrame cropBoneWindow(BoneResource resource, SkeletonNode bone) {
 
         label("Pick bone parts to use in the new bone:"),
 
-        vframe(rows),
+        table,
 
         hframe(
             .layout!"end",
             button("Cancel", () => root.remove()),
-            button("Perform the crop", delegate { }),
+            button("Perform the crop", {
+
+                import std.conv;
+
+                try {
+
+                    const pack = project.display.packs[0];
+                    const size = Vector2(wInput.value.to!int, hInput.value.to!int);
+                    const positions = angles.map!"a.chosenAreaPosition".array;
+
+                    project.showModal = confirmCropWindow(root, pack, targetBoneInput.value, targetVariantInput.value,
+                        resource, size, positions);
+
+                }
+                catch (ConvException) {
+                    // TODO error message
+                }
+
+            }),
         ),
     );
 
@@ -86,14 +126,14 @@ private class CropBoneRow : GluiFrame {
 
             hframe(
                 label("Position: "),
-                xInput = textInput(""),
+                xInput = textInput("0"),
                 label(" "),
-                yInput = textInput(""),
+                yInput = textInput("0"),
             ),
         );
 
-        xInput.value = "0";
-        yInput.value = "0";
+        // yeah we only have canvas access here, hence we're setting this for every angle; we should be passed an Image
+        // instead
         wInput.value = canvas.texture.width.to!string;
         hInput.value = canvas.texture.height.to!string;
 
@@ -108,7 +148,7 @@ private class CropBoneRow : GluiFrame {
         uint[4] values = [xInput, yInput, wInput, hInput]
 
             // Read the value
-            .map!(a => a.value.to!uint.ifThrown(1))
+            .map!(a => a.value.to!uint.ifThrown(0))
             .array;
 
         // Check texture size
@@ -121,6 +161,14 @@ private class CropBoneRow : GluiFrame {
             values[0], values[1],
             values[2], values[3],
         );
+
+    }
+
+    Vector2 chosenAreaPosition() {
+
+        const rect = chosenArea();
+
+        return Vector2(rect.x, rect.y);
 
     }
 
@@ -203,5 +251,41 @@ private Texture angleTexture(BoneResource resource, uint angle) @trusted {
     image = ImageFromImage(image, rect);
 
     return LoadTextureFromImage(image);
+
+}
+
+private GluiFrame confirmCropWindow(GluiFrame parentModal, const Pack pack, string type, string variant,
+    Parameters!cropBone params)
+do {
+
+    import std.file, std.path, std.format;
+
+    const path = bonePath(pack, type, variant);
+    const boneExistsWarning = path.exists
+        ? "Warning: This will replace an existing bone and cannot be undone."
+        : "";
+
+    GluiFrame root;
+
+    return root = vframe(
+        .layout!(1, "center"),
+        .modalTheme,
+
+        label(.layout!"center", "Confirm crop?"),
+        label(format!"The cropped bone %s/%s will be placed in pack %s."(type, variant, pack.name)),
+        label(boneExistsWarning),
+
+        hframe(
+            .layout!"end",
+            button("Cancel", () => root.remove()),
+            button("Perform the crop", {
+
+                makeCroppedBone(path, params);
+                parentModal.remove();
+                root.remove();
+
+            }),
+        ),
+    );
 
 }
