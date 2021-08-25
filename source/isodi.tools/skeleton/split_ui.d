@@ -8,12 +8,10 @@ import isodi.resource;
 
 import isodi.tools.themes;
 import isodi.tools.skeleton.utils;
+import isodi.tools.skeleton.split;
 
 
 @safe:
-
-
-alias BoneResource = Pack.Resource!string;
 
 
 /// A window for spliting bones into multiple ones. For example, a pair of hands could be imported as a single bone,
@@ -23,20 +21,29 @@ GluiFrame splitBoneWindow(BoneResource resource, SkeletonNode bone) {
     import std.array, std.range, std.algorithm;
 
     GluiFrame root;
-    GluiTextInput targetCountInput;
+    auto wInput = textInput("");
+    auto hInput = textInput("");
 
     auto rows = iota(resource.options.angles)
-        .map!(a => cast(GluiNode) new SplitBoneRow(resource, a))
+        .map!(a => cast(GluiNode) new SplitBoneRow(resource, a, wInput, hInput))
         .array;
 
-    return root = vscrollFrame(
+    root = vscrollFrame(
         .modalTheme,
 
         label(.layout!"center", "Split bone"),
 
-        hframe(
-            label("Number of bones to split into: "),
-            targetCountInput = textInput("", delegate { }),
+        vframe(
+            hframe(
+                label("Target bone name: "),
+                textInput(""),
+            ),
+            hframe(
+                label("New bone size: "),
+                wInput,
+                label("x"),
+                hInput,
+            ),
         ),
 
         label("Pick bone parts to use in the new bone:"),
@@ -50,6 +57,8 @@ GluiFrame splitBoneWindow(BoneResource resource, SkeletonNode bone) {
         ),
     );
 
+    return root;
+
 }
 
 private class SplitBoneRow : GluiFrame {
@@ -59,13 +68,15 @@ private class SplitBoneRow : GluiFrame {
     HighlightedImageView canvas;
     GluiTextInput xInput, yInput, wInput, hInput;
 
-    this(BoneResource resource, uint angle) {
+    this(BoneResource resource, uint angle, GluiTextInput wInput, GluiTextInput hInput) {
 
         import std.conv;
 
-        auto nullDelegate = delegate { };
-
         this.texture = angleTexture(resource, angle);
+        this.wInput = wInput;
+        this.hInput = hInput;
+
+        auto nullDelegate = delegate { };
 
         super(
             .layout!"fill",
@@ -76,12 +87,6 @@ private class SplitBoneRow : GluiFrame {
                 xInput = textInput(""),
                 label(" "),
                 yInput = textInput(""),
-            ),
-            hframe(
-                label("Size: "),
-                wInput = textInput(""),
-                label("x"),
-                hInput = textInput(""),
             ),
         );
 
@@ -105,11 +110,10 @@ private class SplitBoneRow : GluiFrame {
             .array;
 
         // Check texture size
+        values[0] = min(values[0], texture.width);
+        values[1] = min(values[1], texture.height);
         values[2] = min(values[2], texture.width);
         values[3] = min(values[3], texture.height);
-
-        values[0] = min(values[0], values[2]);
-        values[1] = min(values[1], values[3]);
 
         return Rectangle(
             values[0], values[1],
