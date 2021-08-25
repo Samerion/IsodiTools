@@ -10,6 +10,7 @@ import isodi.tools.themes;
 import isodi.tools.project;
 
 import isodi.tools.skeleton.structs;
+import isodi.tools.skeleton.split_ui;
 import isodi.tools.skeleton.construct_ui;
 
 
@@ -31,12 +32,26 @@ void skeletonEditor(Project project, ref Tree tree, Model model) {
 
     foreach (i, bone; model.skeletonBones) {
 
+        import std.functional : partial;
+
         // Get the parent
         auto parent = i == 0
             ? tree
             : nodes[bone.parent];
 
-        nodes ~= tree.addNode(parent, bone.id);
+        auto makeFunc = (SkeletonNode localBone) => delegate {
+
+            // TODO: read the exact variant used in the model
+            const options = model.getBone(localBone);
+            project.showModal = splitBoneWindow(options, localBone);
+
+        };
+
+        nodes ~= tree.addNode(parent, bone.id,
+
+            "Split bone", makeFunc(bone),
+
+        );
 
     }
 

@@ -9,6 +9,7 @@ import std.string;
 import isodi;
 import isodi.resource;
 
+import isodi.tools.skeleton.utils;
 import isodi.tools.skeleton.structs;
 
 
@@ -83,7 +84,7 @@ private Image angleCrop(ref Image image, ConstructedBone bone, Rectangle opaqueP
     // Add each angle in
     foreach (angle; 0..bone.angles) {
 
-        const angleRect = image.angleRect(angle, bone);
+        const angleRect = image.angleRect(angle, bone.angles);
         const sourceRect = Rectangle(
             opaquePart.x + angleRect.x,
             opaquePart.y + angleRect.y,
@@ -115,7 +116,7 @@ private Rectangle anglesOpaqueRect(ref Image image, ConstructedBone bone) @trust
     foreach (angle; 0..bone.angles) {
 
         // Get the image part
-        auto part = ImageFromImage(image, image.angleRect(angle, bone));
+        auto part = ImageFromImage(image, image.angleRect(angle, bone.angles));
 
         // Find the opaque part
         const border = GetImageAlphaBorder(part, 0);
@@ -128,17 +129,5 @@ private Rectangle anglesOpaqueRect(ref Image image, ConstructedBone bone) @trust
     }
 
     return result;
-
-}
-
-/// Get the rectangle of given angle image.
-private Rectangle angleRect(ref Image image, uint angle, ConstructedBone bone) {
-
-    const sideWidth = image.width / bone.angles;
-
-    return Rectangle(
-        angle * sideWidth, 0,
-        sideWidth, image.height,
-    );
 
 }
