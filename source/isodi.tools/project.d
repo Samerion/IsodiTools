@@ -253,11 +253,38 @@ class Project {
             newModel.copySkeleton(model);
             newModel.boneDebug = true;
 
-            objects.objectList.addNode(objects.modelList, format!"Model %s"(newModel.id),
+            GluiNode modelNode;
+            modelNode = objects.objectList.addNode(objects.modelList, format!"Model %s"(newModel.id),
 
                 "Edit skeleton", {
 
                     objects.skeletonEditor.model = newModel;
+
+                },
+
+                "Camera focus", {
+
+                    import isodi.camera;
+
+                    display.camera.offset = Camera.Offset(
+                        newModel.position.x,
+                        newModel.position.y,
+                        newModel.position.height.top
+                    );
+
+                },
+
+                "Remove model", {
+
+                    // Remove the model from the skeleton editor if it's the active one
+                    if (objects.skeletonEditor.model is newModel) {
+
+                        objects.skeletonEditor.model = null;
+
+                    }
+
+                    display.removeModel(newModel);
+                    modelNode.remove();
 
                 },
 

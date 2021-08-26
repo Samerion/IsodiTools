@@ -11,6 +11,8 @@ import isodi.tools.themes;
 /// A Glui node representing a tree.
 class Tree : GluiSpace {
 
+    enum specialChildrenCount = 2;
+
     this(T...)(T args) {
 
         super(args);
@@ -59,6 +61,8 @@ class Tree : GluiSpace {
             dropdown = vframe(fillH, dropdownTheme),
         );
 
+        assert(result.children.length == specialChildrenCount);
+
         // Hide the dropdown
         dropdown.hide();
 
@@ -79,6 +83,46 @@ class Tree : GluiSpace {
         }
 
         return result;
+
+    }
+
+    /// Sort nodes of the tree alphabetically.
+    /// Params:
+    ///     parent = Sort starting from a parent.
+    void sortNodes(GluiSpace parent = null) {
+
+        import std.array, std.algorithm;
+
+        // Get the children to sort; skip first two
+        auto toSort = parent is null
+            ? this.children
+            : parent.children[specialChildrenCount..$];
+
+        string nodeText(GluiNode node) {
+
+            if (auto space = cast(GluiSpace) node) {
+                if (auto label = cast(GluiLabel) space.children[0]) {
+                    return label.text;
+                }
+            }
+
+            return "";
+
+        }
+
+        // Skip first two children
+        toSort.schwartzSort!nodeText.moveAll(toSort);
+
+        // Sort recursively
+        foreach (child; toSort) {
+
+            if (auto space = cast(GluiSpace) child) {
+
+                sortNodes(space);
+
+            }
+
+        }
 
     }
 

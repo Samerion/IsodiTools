@@ -12,8 +12,8 @@ import isodi.tools.tree;
 import isodi.tools.themes;
 import isodi.tools.project;
 
-import isodi.tools.skeleton.save;
 import isodi.tools.skeleton.utils;
+import isodi.tools.skeleton.save_ui;
 import isodi.tools.skeleton.structs;
 import isodi.tools.skeleton.crop_ui;
 import isodi.tools.skeleton.construct_ui;
@@ -184,6 +184,9 @@ class SkeletonEditor : GluiSpace {
 
         }
 
+        // Sort the nodes
+        tree.sortNodes();
+
         tree.updateSize();
 
     }
@@ -272,12 +275,13 @@ class SkeletonEditor : GluiSpace {
             "Duplicate", {
 
                 // Add a new bone to the skeleton
-                auto newNode = bone;
+                auto newNode = *model.getNode(boneIndex);
                 newNode.id = uniqueBoneID(bone.id);
                 auto newIndex = model.addNode(newNode);
 
                 // Add a bone to the tree
                 addBoneNode(parent, newIndex, newNode);
+                tree.sortNodes(parent);
 
             },
 
@@ -351,40 +355,5 @@ class SkeletonEditor : GluiSpace {
         updateSize();
 
     }
-
-}
-
-GluiFilePicker saveSkeletonWindow(Project project, Model model) {
-
-    import std.format;
-    import std.file, std.path;
-
-    const pack = project.display.packs[0];
-
-    // Create a file picker for the skeleton
-    GluiFilePicker picker;
-    picker = filePicker(
-        .modalTheme,
-        "Pick a filename to save the skeleton as",
-        {
-
-            // Save the skeleton
-            saveSkeleton(picker.value, model.skeletonBones);
-
-            // Confirm the change
-            project.status.text = format!"Skeleton saved to %s"(picker.value);
-            project.status.updateSize();
-
-            // Reload the resource list sidebar
-            project.packs.reload();
-
-        }
-    );
-
-    // Go to the pack directory
-    picker.value = pack.skeletonPath("").dirName ~ dirSeparator;
-    mkdirRecurse(picker.value);
-
-    return picker;
 
 }
