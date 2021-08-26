@@ -5,7 +5,6 @@ import isodi;
 
 import std.string;
 
-import isodi.tools.tree;
 import isodi.tools.themes;
 import isodi.tools.project;
 
@@ -15,7 +14,7 @@ import isodi.tools.skeleton.editor_ui;
 
 @safe:
 
-GluiFrame constructSkeletonWindow(Project project, ref Tree tree, Model model) {
+GluiFrame constructSkeletonWindow(Project project, Model model) {
 
     GluiFrame root;
     GluiFilePicker imagePicker;
@@ -93,7 +92,7 @@ GluiFrame constructSkeletonWindow(Project project, ref Tree tree, Model model) {
 
                     // Get each bone
                     const bones = boneEditorRows.map!"a.result".array;
-                    project.showModal = project.confirmConstructionWindow(root, tree, model, bones[]);
+                    project.showModal = project.confirmConstructionWindow(root, model, bones[]);
 
                 }
 
@@ -111,7 +110,7 @@ GluiFrame constructSkeletonWindow(Project project, ref Tree tree, Model model) {
 
 }
 
-private GluiFrame confirmConstructionWindow(Project project, GluiFrame parentModal, ref Tree tree, Model model,
+private GluiFrame confirmConstructionWindow(Project project, GluiFrame parentModal, Model model,
     const ConstructedBone[] bones)
 do {
 
@@ -138,7 +137,7 @@ do {
                 model.changeSkeleton(nodes);
 
                 // Rebuild the skeleton editor
-                project.skeletonEditor(tree, model);
+                project.objects.skeletonEditor.makeTree();
 
                 // Close the modals
                 root.remove();
@@ -146,6 +145,7 @@ do {
 
                 // Add a status bar info
                 project.status.text = format!"Images exported to pack %s"(targetPack.name);
+                project.status.updateSize();
 
             }),
         ),

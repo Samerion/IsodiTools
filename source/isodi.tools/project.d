@@ -255,7 +255,11 @@ class Project {
 
             objects.objectList.addNode(objects.modelList, format!"Model %s"(newModel.id),
 
-                "Edit skeleton", () => this.skeletonEditor(objects.skeletonEditor, newModel),
+                "Edit skeleton", {
+
+                    objects.skeletonEditor.model = newModel;
+
+                },
 
             );
 

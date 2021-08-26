@@ -18,50 +18,126 @@ import isodi.tools.skeleton.construct_ui;
 @safe:
 
 
-void skeletonEditor(Project project, ref Tree tree, Model model) {
+class SkeletonEditor : GluiScrollFrame {
 
-    tree.children = [
-        button("Construct new", {
+    public {
 
-            project.showModal = project.constructSkeletonWindow(tree, model);
+        Project project;
+        Tree tree;
 
-        }),
-        button("Save", {
-
-            project.showModal = project.saveSkeletonWindow(model);
-
-        }),
-        label(),
-    ];
-
-    GluiFrame[] nodes;
-
-    foreach (i, bone; model.skeletonBones) {
-
-        import std.functional : partial;
-
-        // Get the parent
-        auto parent = i == 0
-            ? tree
-            : nodes[bone.parent];
-
-        auto makeFunc = (SkeletonNode localBone) => delegate {
-
-            // TODO: read the exact variant used in the model
-            const options = model.getBone(localBone);
-            project.showModal = cropBoneWindow(project, options, localBone);
-
-        };
-
-        nodes ~= tree.addNode(parent, bone.id,
-
-            "Crop bone", makeFunc(bone),
-
-        );
+        GluiFrame[] nodes;
 
     }
 
-    tree.updateSize();
+    private {
+
+        Model _model;
+        GluiSpace inactiveSpace, activeSpace;
+
+    }
+
+    this(Project project) {
+
+        this.project = project;
+        this.tree = new Tree(.layout!"fill");
+
+        // Create the main layout
+        super(
+            inactiveSpace = vframe(
+                objectTabTheme,
+                label("Pick a model to\nedit its skeleton..."),
+            ),
+
+            activeSpace = vspace(
+                .layout!"fill",
+                objectTabTheme,
+
+                vframe(
+                    button("Construct new", {
+
+                        project.showModal = project.constructSkeletonWindow(this.model);
+
+                    }),
+                    button("Save", {
+
+                        project.showModal = project.saveSkeletonWindow(this.model);
+
+                    }),
+                ),
+                tree,
+
+            )
+        );
+
+        activeSpace.hide();
+
+    }
+
+    @property {
+
+        inout(Model) model() inout {
+
+            return _model;
+
+        }
+
+        Model model(Model value) {
+
+            this._model = value;
+
+            makeTree();
+            inactiveSpace.hide();
+            activeSpace.show();
+
+            return value;
+
+        }
+
+    }
+
+    void makeTree() {
+
+        // Reset this tree
+        tree.children = [];
+        nodes = [];
+
+        // Add the bones
+        foreach (i, bone; model.skeletonBones) {
+
+            import std.functional : partial;
+
+            // Get the parent
+            auto parent = i == 0
+                ? tree
+                : nodes[bone.parent];
+
+            auto makeFunc = (SkeletonNode localBone) => delegate {
+
+                // TODO: read the exact variant used in the model
+                const options = model.getBone(localBone);
+                project.showModal = cropBoneWindow(project, options, localBone);
+
+            };
+
+            // Hidden? Don't add options requiring a texture
+            if (bone.hidden) {
+
+                nodes ~= tree.addNode(parent, bone.id);
+
+            }
+
+            // Add all options otherwise
+            else nodes ~= tree.addNode(parent, bone.id,
+
+                "Crop bone", makeFunc(bone),
+
+            );
+
+        }
+
+        tree.updateSize();
+
+    }
 
 }
 

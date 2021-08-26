@@ -9,7 +9,7 @@ import isodi.tools.themes;
 
 
 /// A Glui node representing a tree.
-class Tree : GluiScrollFrame {
+class Tree : GluiSpace {
 
     this(T...)(T args) {
 
@@ -30,7 +30,7 @@ class Tree : GluiScrollFrame {
     }
 
     /// Ditto
-    GluiFrame addNode(Ts...)(GluiFrame parent, string name, Ts options) {
+    GluiFrame addNode(Ts...)(GluiSpace parent, string name, Ts options) {
 
         import std.format : format;
         import std.functional : toDelegate;

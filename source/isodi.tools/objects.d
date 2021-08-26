@@ -12,6 +12,7 @@ import isodi : Model;
 import isodi.tools.tree;
 import isodi.tools.themes;
 import isodi.tools.project;
+import isodi.tools.skeleton.editor_ui;
 
 
 @safe:
@@ -32,7 +33,7 @@ struct Objects {
         GluiFrame modelList;
 
         /// The skeleton editor node
-        Tree skeletonEditor;
+        SkeletonEditor skeletonEditor;
 
     }
 
@@ -60,8 +61,12 @@ struct Objects {
             // Object list
             makeTab("Objects",
 
-                objectList = new Tree(
-                    .layout!(1, "fill"), objectTabTheme,
+                vscrollFrame(
+                    .layout!(1, "fill"),
+                    objectList = new Tree(
+                        objectTabTheme,
+                        .layout!(1, "fill"),
+                    ),
                 ),
 
             ),
@@ -69,10 +74,8 @@ struct Objects {
             // Skeleton editor
             makeTab("Skeleton editor",
 
-                skeletonEditor = new Tree(
-                    .layout!(1, "fill"), objectTabTheme,
-
-                    label("Pick a model to\nedit its skeleton..."),
+                skeletonEditor = new SkeletonEditor(
+                    project,
                 ),
 
             ),
