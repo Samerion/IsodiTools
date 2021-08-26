@@ -121,7 +121,7 @@ struct Packs {
     }
 
     /// Reload the packs and update the UI.
-    private void reload() {
+    void reload() {
 
         // Get the pack list
         auto packList = project.display.packs;

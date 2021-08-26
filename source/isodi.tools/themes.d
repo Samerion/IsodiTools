@@ -96,7 +96,12 @@ shared static this() {
 
     dropdownTheme = theme.makeTheme!q{
 
-        GluiButton!().styleAdd.backgroundColor = Color(0xee, 0xee, 0xee, 0xff);
+        GluiButton!().styleAdd!q{
+
+            padding.sideLeft = 12;
+            backgroundColor = Color(0xee, 0xee, 0xee, 0xff);
+
+        };
 
     };
 

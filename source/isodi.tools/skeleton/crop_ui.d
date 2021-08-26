@@ -106,8 +106,8 @@ GluiFrame cropBoneWindow(Project project, BoneResource resource, SkeletonNode bo
                     const size = Vector2(wInput.value.to!int, hInput.value.to!int);
                     const positions = angles.map!"a.chosenPosition".array;
 
-                    project.showModal = confirmCropWindow(root, pack, targetBoneInput.value, targetVariantInput.value,
-                        resource, size, positions);
+                    project.showModal = confirmCropWindow(root, project, targetBoneInput.value,
+                        targetVariantInput.value, resource, size, positions);
 
                 }
                 catch (ConvException) {
@@ -304,12 +304,13 @@ private Texture angleTexture(BoneResource resource, uint angle) @trusted {
 
 }
 
-private GluiFrame confirmCropWindow(GluiFrame parentModal, const Pack pack, string type, string variant,
+private GluiFrame confirmCropWindow(GluiFrame parentModal, Project project, string type, string variant,
     Parameters!cropBone params)
 do {
 
     import std.file, std.path, std.format;
 
+    const pack = project.display.packs[0];
     const path = bonePath(pack, type, variant);
     const boneExistsWarning = path.exists
         ? "Warning: This will replace an existing bone and cannot be undone."
@@ -331,8 +332,17 @@ do {
             button("Perform the crop", {
 
                 makeCroppedBone(path, params);
+
+                // Close the modals
                 parentModal.remove();
                 root.remove();
+
+                // Reload resources
+                project.display.reloadResources();
+
+                // Add a status bar info
+                project.status.text = format!"Bone exported to pack %s"(pack.name);
+                project.status.updateSize();
 
             }),
         ),

@@ -7,6 +7,8 @@ import std.path;
 import std.string;
 import std.exception;
 
+import isodi.tools.skeleton.utils;
+
 
 @safe:
 
@@ -35,22 +37,9 @@ struct ConstructedBone {
     /// Path to the image within the pack.
     string packPath() const {
 
-        return .relativeBonePath(bone, variant);
+        return relativeBonePath(bone, variant);
 
     }
-
-}
-
-string bonePath(const Pack pack, string bone, string variant) {
-
-    const relative = relativeBonePath(bone, variant);
-    return pack.path.buildPath(relative);
-
-}
-
-string relativeBonePath(string bone, string variant) {
-
-    return format!"models/bone/%s/%s.png"(bone, variant);
 
 }
 
