@@ -38,12 +38,31 @@ GluiFrame cropBoneWindow(Project project, BoneResource resource, SkeletonNode bo
     auto table = vframe();
     CropBoneRow[] angles;
 
-    foreach (i; 0..resource.options.angles) {
+    const angleCount = resource.options.angles;
+
+    foreach (i; 0..angleCount) {
 
         auto row = new CropBoneRow(resource, i, wInput, hInput);
 
         table.children ~= row;
         angles ~= row;
+
+    }
+
+    // Number of angles is even
+    if (resource.options.angles % 2 == 0) {
+
+        const halfLength = angleCount/2;
+
+        foreach (i; 0..halfLength) {
+
+            auto a = angles[i];
+            auto b = angles[i+halfLength];
+
+            a.setOpposite(b);
+            b.setOpposite(a);
+
+        }
 
     }
 
@@ -85,7 +104,7 @@ GluiFrame cropBoneWindow(Project project, BoneResource resource, SkeletonNode bo
 
                     const pack = project.display.packs[0];
                     const size = Vector2(wInput.value.to!int, hInput.value.to!int);
-                    const positions = angles.map!"a.chosenAreaPosition".array;
+                    const positions = angles.map!"a.chosenPosition".array;
 
                     project.showModal = confirmCropWindow(root, pack, targetBoneInput.value, targetVariantInput.value,
                         resource, size, positions);
@@ -105,11 +124,21 @@ GluiFrame cropBoneWindow(Project project, BoneResource resource, SkeletonNode bo
 
 private class CropBoneRow : GluiFrame {
 
-    // TODO: cleanup
+    // TODO: unload texture
     Texture texture;
     HighlightedImageView canvas;
     GluiTextInput xInput, yInput, wInput, hInput;
+    CropBoneRow opposite;
 
+    // Internal
+    GluiFrame inputsFrame;
+
+    /// Params:
+    ///     resource = Bone resource to load.
+    ///     angle    = Angle to diplay.
+    ///     wInput   = Input for the box width.
+    ///     hInput   = Input for the box height.
+    ///     opposite = Row representing the opposite angle, if present.
     this(BoneResource resource, uint angle, GluiTextInput wInput, GluiTextInput hInput) {
 
         import std.conv;
@@ -117,6 +146,7 @@ private class CropBoneRow : GluiFrame {
         this.texture = angleTexture(resource, angle);
         this.wInput = wInput;
         this.hInput = hInput;
+        this.opposite = opposite;
 
         auto nullDelegate = delegate { };
 
@@ -124,7 +154,7 @@ private class CropBoneRow : GluiFrame {
             .layout!"fill",
             canvas = new HighlightedImageView(.layout!"fill", texture, Vector2(0, 100)),
 
-            hframe(
+            inputsFrame = hframe(
                 label("Position: "),
                 xInput = textInput("0"),
                 label(" "),
@@ -136,6 +166,26 @@ private class CropBoneRow : GluiFrame {
         // instead
         wInput.value = canvas.texture.width.to!string;
         hInput.value = canvas.texture.height.to!string;
+
+    }
+
+    /// Set the opposite row
+    void setOpposite(CropBoneRow value) {
+
+        assert(opposite is null);  // can't set twice
+        assert(value !is null);
+
+        opposite = value;
+
+        inputsFrame ~= button("Auto", {
+
+            import std.conv;
+
+            auto oppositeRect = opposite.chosenArea;
+            xInput.value = (texture.width - oppositeRect.x - oppositeRect.w).to!string;
+            yInput.value = oppositeRect.y.to!string;
+
+        });
 
     }
 
@@ -164,7 +214,7 @@ private class CropBoneRow : GluiFrame {
 
     }
 
-    Vector2 chosenAreaPosition() {
+    Vector2 chosenPosition() {
 
         const rect = chosenArea();
 
