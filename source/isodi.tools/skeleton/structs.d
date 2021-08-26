@@ -101,3 +101,30 @@ struct BoneEditorRow {
     }
 
 }
+
+class Vector3Editor : GluiSpace {
+
+    GluiTextInput xInput, yInput, zInput;
+
+    this(T...)(T args) {
+
+        super(
+            args,
+
+            hspace(
+                label("x "),
+                xInput = textInput(""),
+            ),
+            hspace(
+                label("y "),
+                yInput = textInput(""),
+            ),
+            hspace(
+                label("z "),
+                zInput = textInput(""),
+            ),
+        );
+
+    }
+
+}
