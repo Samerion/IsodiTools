@@ -31,8 +31,22 @@ do {
 
         const angle = i.to!uint;
         const sourceAngle = image.angleRect(angle, angleCount);
-        const sourceRect = Rectangle(sourceAngle.x + position.x, position.y, size.x, size.y);
-        const targetRect = result.angleRect(angle, angleCount);
+        const targetAngle = result.angleRect(angle, angleCount);
+        auto targetRect = cast() targetAngle;
+        auto sourceRect = Rectangle(sourceAngle.x + position.x, position.y, size.x, size.y);
+
+        // Move the target if position is negative
+        if (position.x < 0) targetRect.x -= position.x;
+        if (position.y < 0) targetRect.y -= position.y;
+
+        // TODO: check for overlaps
+
+        // Make sure the rectangles don't go out of bounds
+        sourceRect = sourceRect.intersect(sourceAngle);
+
+        // Prevent scaling
+        targetRect.w = sourceRect.w;
+        targetRect.h = sourceRect.h;
 
         ImageDraw(&result, image, sourceRect, targetRect, Colors.WHITE);
 
@@ -55,5 +69,20 @@ void makeCroppedBone(string path, Parameters!cropBone params) @trusted {
 
     // Save the bone
     ExportImage(image, path.toStringz);
+
+}
+
+private Rectangle intersect(Rectangle a, Rectangle b) {
+
+    import std.algorithm;
+
+    Rectangle result;
+
+    result.x = max(a.x, b.x);
+    result.y = max(a.y, b.y);
+    result.w = min(a.x + a.w, b.x + b.w) - result.x;
+    result.h = min(a.y + a.h, b.y + b.h) - result.y;
+
+    return result;
 
 }

@@ -195,17 +195,15 @@ private class CropBoneRow : GluiFrame {
         import std.array, std.algorithm;
         import std.conv, std.math, std.exception;
 
-        uint[4] values = [xInput, yInput, wInput, hInput]
+        int[4] values = [xInput, yInput, wInput, hInput]
 
             // Read the value
-            .map!(a => a.value.to!uint.ifThrown(0))
+            .map!(a => a.value.to!int.ifThrown(0))
             .array;
 
         // Check texture size
         values[0] = min(values[0], texture.width);
         values[1] = min(values[1], texture.height);
-        values[2] = min(values[2], texture.width);
-        values[3] = min(values[3], texture.height);
 
         return Rectangle(
             values[0], values[1],
@@ -273,6 +271,10 @@ private class HighlightedImageView : GluiImageView {
         below.y += scaled.y + scaled.height;
         below.height -= scaled.y + scaled.height;
 
+        auto inside = cast() scaled;
+        inside.x += targetArea.x;
+        inside.y += targetArea.y;
+
         // Draw a rectangle above the selection
         const bg = Color(0, 0, 0, 0x88);
 
@@ -282,6 +284,7 @@ private class HighlightedImageView : GluiImageView {
             DrawRectangleRec(left, bg);
             DrawRectangleRec(right, bg);
             DrawRectangleRec(below, bg);
+            DrawRectangleLinesEx(inside, 1, Color(0, 0, 0, 0x44));
 
         }();
 
