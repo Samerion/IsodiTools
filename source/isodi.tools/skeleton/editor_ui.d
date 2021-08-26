@@ -35,13 +35,19 @@ class SkeletonEditor : GluiSpace {
     private {
 
         Model _model;
-        GluiSpace inactiveSpace, treeEditor, boneEditor;
-        GluiButton!() backButton;
 
+        // Spaces
+        GluiSpace inactiveSpace, treeEditor, boneEditor;
+
+        // Tree editor
         Tree tree;
 
+        // Bone editor
         size_t editedNode;
+        GluiLabel nodeIDLabel;
         Vector3Editor nodeStartInput, nodeEndInput, texturePosInput;
+        GluiButton!() backButton;
+        GluiButton!() mirrorButton;
 
     }
 
@@ -83,6 +89,8 @@ class SkeletonEditor : GluiSpace {
                     .layout!"fill",
                     objectTabTheme,
 
+                    nodeIDLabel = label("Bone"),
+
                     label("Bone start"),
                     nodeStartInput = new Vector3Editor,
 
@@ -91,6 +99,26 @@ class SkeletonEditor : GluiSpace {
 
                     label("Texture position"),
                     texturePosInput = new Vector3Editor,
+
+                    mirrorButton = button(.layout!"fill", "Flip bone", {
+
+                        auto node = model.getNode(editedNode);
+                        node.mirror = !node.mirror;
+
+                        updateMirrorButton(node);
+
+                    }),
+
+                    button(.layout!"fill", "Remove bone", {
+
+                        auto node = model.getNode(editedNode);
+
+                        // TODO: confirm button
+                        model.removeNodes(node.id);
+                        makeTree();
+
+                    }),
+
                 ),
 
             ),
@@ -185,13 +213,23 @@ class SkeletonEditor : GluiSpace {
 
     void showBoneEditor(size_t nodeIndex) {
 
+        import std.format;
+
+        auto node = model.getNode(nodeIndex);
+
         // Set the bone
         editedNode = nodeIndex;
 
-        auto node = model.getNode(editedNode);
+        // Set ID
+        nodeIDLabel.text = format!"Bone %s"(node.id);
+
+        // Update positions
         nodeStartInput.floatValue = node.boneStart;
         nodeEndInput.floatValue = node.boneEnd;
         texturePosInput.floatValue = node.texturePosition;
+
+        // Update buttons
+        updateMirrorButton(node);
 
         // Show the editor
         inactiveSpace.hide();
@@ -301,6 +339,16 @@ class SkeletonEditor : GluiSpace {
         while (model.getNode(targetID));
 
         return targetID;
+
+    }
+
+    private void updateMirrorButton(const SkeletonNode* node) {
+
+        mirrorButton.text = node.mirror
+            ? "Unflip node"
+            : "Flip node";
+
+        updateSize();
 
     }
 
