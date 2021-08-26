@@ -275,6 +275,11 @@ private class HighlightedImageView : GluiImageView {
         inside.x += targetArea.x;
         inside.y += targetArea.y;
 
+        auto middleTop    = Vector2(inside.x + inside.w/2, inside.y);
+        auto middleBottom = Vector2(middleTop.x, middleTop.y + inside.h);
+        auto middleLeft   = Vector2(inside.x, inside.y + inside.h/2);
+        auto middleRight  = Vector2(middleLeft.x + inside.w, middleLeft.y);
+
         // Draw a rectangle above the selection
         const bg = Color(0, 0, 0, 0x88);
 
@@ -285,6 +290,9 @@ private class HighlightedImageView : GluiImageView {
             DrawRectangleRec(right, bg);
             DrawRectangleRec(below, bg);
             DrawRectangleLinesEx(inside, 1, Color(0, 0, 0, 0x44));
+
+            DrawLineEx(middleTop, middleBottom, 1, Colors.RED);
+            DrawLineEx(middleLeft, middleRight, 1, Colors.RED);
 
         }();
 
