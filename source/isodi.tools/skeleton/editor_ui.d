@@ -2,7 +2,10 @@
 module isodi.tools.skeleton.editor_ui;
 
 import glui;
+import raylib;
+
 import isodi;
+import isodi : Model;
 import isodi.resource;
 
 import isodi.tools.tree;
@@ -37,6 +40,7 @@ class SkeletonEditor : GluiSpace {
 
         Tree tree;
 
+        size_t editedNode;
         Vector3Editor nodeStartInput, nodeEndInput, texturePosInput;
 
     }
@@ -79,13 +83,13 @@ class SkeletonEditor : GluiSpace {
                     .layout!"fill",
                     objectTabTheme,
 
-                    label("Node start"),
+                    label("Bone start"),
                     nodeStartInput = new Vector3Editor,
 
-                    label("Node end"),
+                    label("Bone end"),
                     nodeEndInput = new Vector3Editor,
 
-                    label("Position texture"),
+                    label("Texture position"),
                     texturePosInput = new Vector3Editor,
                 ),
 
@@ -179,14 +183,38 @@ class SkeletonEditor : GluiSpace {
 
     }
 
-    void showBoneEditor(size_t boneIndex) {
+    void showBoneEditor(size_t nodeIndex) {
 
+        // Set the bone
+        editedNode = nodeIndex;
+
+        auto node = model.getNode(editedNode);
+        nodeStartInput.floatValue = node.boneStart;
+        nodeEndInput.floatValue = node.boneEnd;
+        texturePosInput.floatValue = node.texturePosition;
+
+        // Show the editor
         inactiveSpace.hide();
 
         boneEditor.show();
         backButton.show();
 
         treeEditor.hide();
+
+    }
+
+    protected override void drawImpl(Rectangle paddingBox, Rectangle contentBox) @trusted {
+
+        super.drawImpl(paddingBox, contentBox);
+
+        if (!boneEditor.hidden) {
+
+            auto node = &model.getNode(editedNode);
+            node.boneStart = nodeStartInput.floatValue;
+            node.boneEnd = nodeEndInput.floatValue;
+            node.texturePosition = texturePosInput.floatValue;
+
+        }
 
     }
 

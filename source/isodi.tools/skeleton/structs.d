@@ -1,6 +1,7 @@
 module isodi.tools.skeleton.structs;
 
 import glui;
+import raylib;
 import isodi.pack;
 
 import std.path;
@@ -124,6 +125,47 @@ class Vector3Editor : GluiSpace {
                 zInput = textInput(""),
             ),
         );
+
+    }
+
+    Vector3 value() const {
+
+        import std.conv, std.exception;
+
+        return Vector3(
+            xInput.value.to!float.ifThrown(0),
+            yInput.value.to!float.ifThrown(0),
+            zInput.value.to!float.ifThrown(0),
+        );
+
+    }
+
+    float[3] floatValue() const {
+
+        import std.conv, std.exception;
+
+        auto val = value();
+
+        return [val.x, val.y, val.z];
+
+    }
+
+    Vector3 value(Vector3 vec) {
+
+        import std.conv;
+
+        xInput.value = vec.x.to!string;
+        yInput.value = vec.y.to!string;
+        zInput.value = vec.z.to!string;
+
+        return vec;
+
+    }
+
+    float[3] floatValue(float[3] arr) {
+
+        value = Vector3(arr[0], arr[1], arr[2]);
+        return arr;
 
     }
 

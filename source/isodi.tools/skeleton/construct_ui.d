@@ -139,6 +139,9 @@ do {
                 // Rebuild the skeleton editor
                 project.objects.skeletonEditor.makeTree();
 
+                // Reload resources
+                project.display.reloadResources();
+
                 // Close the modals
                 root.remove();
                 parentModal.remove();
