@@ -203,13 +203,13 @@ class SkeletonEditor : GluiSpace {
 
     }
 
-    protected override void drawImpl(Rectangle paddingBox, Rectangle contentBox) @trusted {
+    protected override void drawImpl(Rectangle paddingBox, Rectangle contentBox) {
 
         super.drawImpl(paddingBox, contentBox);
 
         if (!boneEditor.hidden) {
 
-            auto node = &model.getNode(editedNode);
+            auto node = model.getNode(editedNode);
             node.boneStart = nodeStartInput.floatValue;
             node.boneEnd = nodeEndInput.floatValue;
             node.texturePosition = texturePosInput.floatValue;
@@ -222,25 +222,31 @@ class SkeletonEditor : GluiSpace {
 
         import std.meta;
 
+        // Menu for the node
         alias Menu = AliasSeq!(
 
-            "Edit bone", {
+            "Edit node", {
 
                 showBoneEditor(boneIndex);
 
             },
 
+            "Duplicate", {
+
+                // Add a new bone to the skeleton
+                auto newNode = bone;
+                newNode.id = uniqueBoneID(bone.id);
+                auto newIndex = model.addNode(newNode);
+
+                // Add a bone to the tree
+                addBoneNode(parent, newIndex, newNode);
+
+            },
+
         );
 
-        // Hidden? Don't add options requiring a texture
-        if (bone.hidden) {
-
-            nodes ~= tree.addNode(parent, bone.id, Menu);
-
-        }
-
-        // Add all options otherwise
-        else nodes ~= tree.addNode(parent, bone.id, Menu,
+        // Menu for the node, if node isn't hidden
+        alias MenuVisisble = AliasSeq!(
 
             "Crop bone", {
 
@@ -251,6 +257,50 @@ class SkeletonEditor : GluiSpace {
             },
 
         );
+
+        // Hidden? Don't add options requiring a texture
+        nodes ~= bone.hidden
+            ? tree.addNode(parent, bone.id, Menu)
+            : tree.addNode(parent, bone.id, Menu, MenuVisisble);
+
+        updateSize();
+
+    }
+
+    private string uniqueBoneID(string baseID) {
+
+        import std.conv;
+        import std.array, std.ascii, std.algorithm, std.range;
+
+        string targetID = baseID;
+
+        do {
+
+            // Get the number the bone ends with
+            auto seq = targetID
+                .retro.until!(a => !a.isDigit)
+                .array.reverse;
+
+            // There is a sequence number assigned already
+            if (seq.length) {
+
+                // Increment the sequence number
+                auto seqNum = seq.to!int + 1;
+
+                // Add to the bone ID
+                targetID = targetID[0 .. $-seq.length] ~ seqNum.to!string;
+
+            }
+
+            // Append a `-2` number
+            else targetID ~= "-2";
+
+        }
+
+        // Repeat if the ID is occupied
+        while (model.getNode(targetID));
+
+        return targetID;
 
     }
 
