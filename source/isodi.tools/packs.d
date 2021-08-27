@@ -172,7 +172,7 @@ struct Packs {
         // Create the model
         auto model = new RaylibModel(project.display, skeletonType);
         model.positionRef.height.depth = 0;
-        model.boneDebug = true;
+        model.positionDebug = true;
 
         project.brush = model;
 

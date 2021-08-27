@@ -7,6 +7,7 @@ import raylib;
 import isodi;
 import isodi : Model;
 import isodi.resource;
+import isodi.raylib.model;
 
 import isodi.tools.tree;
 import isodi.tools.themes;
@@ -138,13 +139,6 @@ class SkeletonEditor : GluiSpace {
 
             import isodi.raylib.model : RaylibModel;
 
-            // Disable bone debug for the previous model
-            if (auto oldmodel = cast(RaylibModel) _model) {
-
-                oldmodel.boneDebug = false;
-
-            }
-
             // Special case: null
             if (value is null) {
 
@@ -154,13 +148,6 @@ class SkeletonEditor : GluiSpace {
             }
 
             _model = value;
-
-            // Enable bone debug
-            if (auto rlmodel = cast(RaylibModel) _model) {
-
-                rlmodel.boneDebug = true;
-
-            }
 
             makeTree();
 
@@ -200,24 +187,20 @@ class SkeletonEditor : GluiSpace {
 
     void nullify() {
 
+        hideBoneEditor();
+        treeEditor.hide();
+
         _model = null;
         inactiveSpace.show();
-
-        boneEditor.hide();
-        backButton.hide();
-
-        treeEditor.hide();
 
     }
 
     void showTree() {
 
-        inactiveSpace.hide();
-
-        boneEditor.hide();
-        backButton.hide();
-
+        hideBoneEditor();
         treeEditor.show();
+
+        inactiveSpace.hide();
 
     }
 
@@ -229,6 +212,13 @@ class SkeletonEditor : GluiSpace {
 
         // Set the bone
         editedNode = nodeIndex;
+
+        // Enable bone debug
+        if (auto rlmodel = cast(RaylibModel) model) {
+
+            rlmodel.nodeBoneDebug(editedNode) = true;
+
+        }
 
         // Set ID
         nodeIDLabel.text = format!"Bone %s"(node.id);
@@ -248,6 +238,26 @@ class SkeletonEditor : GluiSpace {
         backButton.show();
 
         treeEditor.hide();
+
+    }
+
+    private void hideBoneEditor() {
+
+        // Ignore if the editor isn't visible
+        // Below code assumes it is and will crash otherwise
+        if (boneEditor.hidden) return;
+
+        // Hide the editor
+        boneEditor.hide();
+        backButton.hide();
+
+        // If there's a model assigned
+        if (auto model = cast(RaylibModel) _model) {
+
+            // Clear node debug
+            model.nodeBoneDebug(editedNode) = false;
+
+        }
 
     }
 

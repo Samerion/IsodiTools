@@ -251,8 +251,11 @@ class Project {
         // Painting models
         else if (auto model = cast(isodi.Model) _brush) {
 
-            auto newModel = display.addModel(position);
+            import isodi.raylib.model : RaylibModel;
+
+            auto newModel = cast(RaylibModel) display.addModel(position);
             newModel.copySkeleton(model);
+            newModel.positionDebug = true;
 
             GluiNode modelNode;
             modelNode = objects.objectList.addNode(objects.modelList, format!"Model %s"(newModel.id),
