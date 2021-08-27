@@ -47,7 +47,7 @@ class SkeletonEditor : GluiSpace {
         // Bone editor
         size_t editedNode;
         GluiLabel nodeIDLabel;
-        Vector3Editor nodeStartInput, nodeEndInput, texturePosInput;
+        Vector3Editor boneStartInput, boneEndInput, texturePosInput;
         GluiButton!() backButton;
         GluiButton!() mirrorButton;
 
@@ -94,10 +94,10 @@ class SkeletonEditor : GluiSpace {
                     nodeIDLabel = label("Bone"),
 
                     label("Bone start"),
-                    nodeStartInput = new Vector3Editor,
+                    boneStartInput = new Vector3Editor,
 
                     label("Bone end"),
-                    nodeEndInput = new Vector3Editor,
+                    boneEndInput = new Vector3Editor,
 
                     label("Texture position"),
                     texturePosInput = new Vector3Editor,
@@ -106,8 +106,34 @@ class SkeletonEditor : GluiSpace {
 
                         auto node = model.getNode(editedNode);
                         node.mirror = !node.mirror;
+                        // TODO: recursive?
 
                         updateMirrorButton(node);
+
+                    }),
+
+                    button(.layout!"fill", "Invert bone ends", {
+
+                        float[3] sum(float[3] a, float[3] b) {
+
+                            return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+
+                        }
+
+                        float[3] invert(float[3] a) {
+
+                            return [-a[0], -a[1], -a[2]];
+
+                        }
+
+                        auto node = model.getNode(editedNode);
+
+                        // Invert bone start/end
+                        boneStartInput.floatValue = node.boneStart = sum(node.boneStart, node.boneEnd);
+                        boneEndInput.floatValue = node.boneEnd = invert(node.boneEnd);
+
+                        // Update textre position
+                        texturePosInput.floatValue = node.texturePosition = sum(node.texturePosition, node.boneEnd);
 
                     }),
 
@@ -224,8 +250,8 @@ class SkeletonEditor : GluiSpace {
         nodeIDLabel.text = format!"Bone %s"(node.id);
 
         // Update positions
-        nodeStartInput.floatValue = node.boneStart;
-        nodeEndInput.floatValue = node.boneEnd;
+        boneStartInput.floatValue = node.boneStart;
+        boneEndInput.floatValue = node.boneEnd;
         texturePosInput.floatValue = node.texturePosition;
 
         // Update buttons
@@ -262,7 +288,8 @@ class SkeletonEditor : GluiSpace {
     }
 
     /// Add a new node to the skeleton.
-    void addBoneNode(SkeletonNode newNode) {
+    /// Returns: Index of the node.
+    size_t addBoneNode(SkeletonNode newNode) {
 
         assert(newNode.parent < nodes.length, "Structure mismatch; parent not in editor tree");
 
@@ -273,6 +300,8 @@ class SkeletonEditor : GluiSpace {
         addBoneNode(parent, newIndex, newNode);
         tree.sortNodes(parent);
 
+        return newIndex;
+
     }
 
     protected override void drawImpl(Rectangle paddingBox, Rectangle contentBox) {
@@ -282,8 +311,8 @@ class SkeletonEditor : GluiSpace {
         if (!boneEditor.hidden) {
 
             auto node = model.getNode(editedNode);
-            node.boneStart = nodeStartInput.floatValue;
-            node.boneEnd = nodeEndInput.floatValue;
+            node.boneStart = boneStartInput.floatValue;
+            node.boneEnd = boneEndInput.floatValue;
             node.texturePosition = texturePosInput.floatValue;
 
         }
@@ -306,6 +335,8 @@ class SkeletonEditor : GluiSpace {
             },
 
             "Duplicate", {
+
+                // TODO: duplicate recursively
 
                 // Create the node
                 auto newNode = *model.getNode(boneIndex);
@@ -347,21 +378,25 @@ class SkeletonEditor : GluiSpace {
 
                 // Get the node
                 auto newNodes = nodeClipboard;
-                auto localRoot = newNodes[0].parent;
 
-                // Reset root start
+                size_t[] newIndexes;
+                newIndexes.reserve(nodeClipboard.length);
+
+                // Reset root parent and start
                 newNodes[0].boneStart = [0, 0, 0];
 
-                foreach (newNode; nodeClipboard) {
+                foreach (i, newNode; nodeClipboard) {
 
                     // Ensure unique IDs
                     newNode.id = uniqueBoneID(newNode.id);
 
-                    // Move parent
-                    newNode.parent += boneIndex.to!int - localRoot.to!int;
+                    // Find parent index — inherit current bone index for root
+                    newNode.parent = i
+                        ? newIndexes[newNode.parent]
+                        : boneIndex;
 
                     // Paste it in the tree
-                    addBoneNode(newNode);
+                    newIndexes ~= addBoneNode(newNode);
 
                 }
 
