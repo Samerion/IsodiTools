@@ -69,6 +69,11 @@ GluiFrame constructSkeletonWindow(Project project, Model model) {
 
     });
 
+    // If cancelled, we need to remove the picker so it isn't drawn multiple times
+    imagePicker.cancelled = () {
+        imagePicker.remove();
+    };
+
     return root = vframe(
         .layout!(1, "center"),
         .modalTheme,

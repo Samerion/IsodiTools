@@ -141,6 +141,10 @@ class Project {
     /// Show a modal in the project window.
     void showModal(GluiNode modalNode) {
 
+        import std.algorithm;
+
+        assert(!modalsSpace.children.canFind!"a is b"(modalNode), "This modal is already shown");
+
         modalsSpace.children ~= modalNode;
         modalsSpace.updateSize();
         modalNode.toRemove = false;  // TODO: correct this in Glui

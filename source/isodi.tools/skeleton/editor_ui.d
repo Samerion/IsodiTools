@@ -41,6 +41,7 @@ class SkeletonEditor : GluiSpace {
 
         // Tree editor
         Tree tree;
+        SkeletonNode[] nodeClipboard;
 
         // Bone editor
         size_t editedNode;
@@ -106,16 +107,6 @@ class SkeletonEditor : GluiSpace {
                         node.mirror = !node.mirror;
 
                         updateMirrorButton(node);
-
-                    }),
-
-                    button(.layout!"fill", "Remove bone", {
-
-                        auto node = model.getNode(editedNode);
-
-                        // TODO: confirm button
-                        model.removeNodes(node.id);
-                        makeTree();
 
                     }),
 
@@ -244,6 +235,20 @@ class SkeletonEditor : GluiSpace {
 
     }
 
+    /// Add a new node to the skeleton.
+    void addBoneNode(SkeletonNode newNode) {
+
+        assert(newNode.parent < nodes.length, "Structure mismatch; parent not in editor tree");
+
+        auto newIndex = model.addNode(newNode);
+        auto parent = nodes[newNode.parent];
+
+        // Add a bone to the tree
+        addBoneNode(parent, newIndex, newNode);
+        tree.sortNodes(parent);
+
+    }
+
     protected override void drawImpl(Rectangle paddingBox, Rectangle contentBox) {
 
         super.drawImpl(paddingBox, contentBox);
@@ -263,6 +268,8 @@ class SkeletonEditor : GluiSpace {
 
         import std.meta;
 
+        GluiFrame thisNode;
+
         // Menu for the node
         alias Menu = AliasSeq!(
 
@@ -274,16 +281,65 @@ class SkeletonEditor : GluiSpace {
 
             "Duplicate", {
 
-                // Add a new bone to the skeleton
+                // Create the node
                 auto newNode = *model.getNode(boneIndex);
                 newNode.id = uniqueBoneID(bone.id);
-                auto newIndex = model.addNode(newNode);
 
-                // Add a bone to the tree
-                addBoneNode(parent, newIndex, newNode);
-                tree.sortNodes(parent);
+                // Add to the tree
+                addBoneNode(newNode);
 
             },
+
+            "Cut node", {
+
+                import std.format;
+
+                // Move the node to the clipboard
+                auto node = model.getNode(boneIndex);
+                nodeClipboard = model.removeNodes(node.id);
+
+                makeTree();
+
+                // Show in status bar
+                project.status.text = format!"Node %s moved to clipboard"(node.id);
+                project.status.updateSize();
+
+            },
+
+            "Paste node", {
+
+                import std.conv, std.format;
+
+                // Nothing in the clipboard!
+                if (nodeClipboard.length == 0) {
+
+                    project.status.text = "Can't paste, clipboard is empty";
+                    project.status.updateSize();
+                    return;
+
+                }
+
+                // Get the node
+                auto newNodes = nodeClipboard;
+                auto localRoot = newNodes[0].parent;
+
+                // Reset root start
+                newNodes[0].boneStart = [0, 0, 0];
+
+                foreach (newNode; nodeClipboard) {
+
+                    // Ensure unique IDs
+                    newNode.id = uniqueBoneID(newNode.id);
+
+                    // Move parent
+                    newNode.parent += boneIndex.to!int - localRoot.to!int;
+
+                    // Paste it in the tree
+                    addBoneNode(newNode);
+
+                }
+
+            }
 
         );
 
@@ -301,9 +357,12 @@ class SkeletonEditor : GluiSpace {
         );
 
         // Hidden? Don't add options requiring a texture
-        nodes ~= bone.hidden
+        thisNode = bone.hidden
             ? tree.addNode(parent, bone.id, Menu)
             : tree.addNode(parent, bone.id, Menu, MenuVisisble);
+
+        assert(boneIndex == nodes.length, "Structure mismatch; wrong node count");
+        nodes ~= thisNode;
 
         updateSize();
 
@@ -316,7 +375,8 @@ class SkeletonEditor : GluiSpace {
 
         string targetID = baseID;
 
-        do {
+        // Repeat if the ID is occupied
+        while (model.getNode(targetID)) {
 
             // Get the number the bone ends with
             auto seq = targetID
@@ -338,9 +398,6 @@ class SkeletonEditor : GluiSpace {
             else targetID ~= "-2";
 
         }
-
-        // Repeat if the ID is occupied
-        while (model.getNode(targetID));
 
         return targetID;
 
