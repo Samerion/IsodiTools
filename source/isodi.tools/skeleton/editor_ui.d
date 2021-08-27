@@ -136,6 +136,15 @@ class SkeletonEditor : GluiSpace {
 
         Model model(Model value) {
 
+            import isodi.raylib.model : RaylibModel;
+
+            // Disable bone debug for the previous model
+            if (auto oldmodel = cast(RaylibModel) _model) {
+
+                oldmodel.boneDebug = false;
+
+            }
+
             // Special case: null
             if (value is null) {
 
@@ -144,7 +153,14 @@ class SkeletonEditor : GluiSpace {
 
             }
 
-            this._model = value;
+            _model = value;
+
+            // Enable bone debug
+            if (auto rlmodel = cast(RaylibModel) _model) {
+
+                rlmodel.boneDebug = true;
+
+            }
 
             makeTree();
 
