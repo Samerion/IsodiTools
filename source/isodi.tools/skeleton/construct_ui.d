@@ -37,6 +37,8 @@ GluiFrame constructSkeletonWindow(Project project, Model model) {
 
     imagePicker = filePicker(.modalTheme, pickerText, () @trusted {
 
+        imagePicker.remove();
+
         import std.file, std.path, std.array, std.algorithm;
 
         const path = imagePicker.value;
@@ -54,11 +56,11 @@ GluiFrame constructSkeletonWindow(Project project, Model model) {
         boneEditorRows = dirEntries(path, SpanMode.shallow)
             .map!"a.name"
             .filter!(a => a.extension == ".png")
-            .map!(a => BoneEditorRow(a, pack))
-            .array;
-
-        boneEditor.children = boneEditorRows
-            .map!(a => cast(GluiNode) a.root)
+            .map!((a) {
+                auto row = new BoneEditorRow(a, pack);
+                boneEditor.children ~= row;
+                return row;
+            })
             .array;
 
         summaryLabel.text = format!boneCountText(boneEditorRows.length)
@@ -84,7 +86,9 @@ GluiFrame constructSkeletonWindow(Project project, Model model) {
         button(pickerText, { project.showModal = imagePicker; }),
 
         summaryLabel = label(format!boneCountText(0)),
-        boneEditor = vframe(),
+        boneEditor = vframe(
+            .layout!"fill",
+        ),
 
         hframe(
             .layout!"end",
@@ -95,8 +99,14 @@ GluiFrame constructSkeletonWindow(Project project, Model model) {
 
                 try {
 
+                    import std.range, std.stdio;
+
                     // Get each bone
-                    const bones = boneEditorRows.map!"a.result".array;
+                    const bones = boneEditorRows
+                        .filter!"!a.excluded"
+                        .map!"a.result"
+                        .array;
+
                     project.showModal = project.confirmConstructionWindow(root, model, bones[]);
 
                 }
@@ -111,6 +121,93 @@ GluiFrame constructSkeletonWindow(Project project, Model model) {
             }),
         ),
 
+    );
+
+}
+
+/// Represents a row in the bone editor.
+private class BoneEditorRow : GluiFrame {
+
+    string imagePath;
+    Pack targetPack;
+    bool excluded;
+
+    GluiTextInput boneInput, variantInput;
+    GluiButton!() excludedInput;
+
+    this(string path, ref Pack pack) {
+        // ref to avoid copying for the constructor
+
+        import std.path;
+        import std.algorithm;
+
+        const base = path.baseName(".png");
+        const segments = base.findSplit("_");
+
+        imagePath = path;
+        targetPack = pack;
+
+        super(
+            .layout!"fill",
+            label(.layout!2, path.baseName),
+            boneInput     = textInput(.layout!1, "Bone type", delegate { }),
+            variantInput  = textInput(.layout!1, "Variant", delegate { }),
+            excludedInput = button(.layout!1, "Included", {
+
+                excluded = !excluded;
+                excludedInput.text = excluded
+                    ? "Excluded"
+                    : "Included";
+
+            }),
+        );
+
+        directionHorizontal = true;
+
+        boneInput.value    = segments ? segments[2] : base;
+        variantInput.value = segments ? segments[0] : "";
+
+    }
+
+    ConstructedBone result() const {
+
+        import std.path;
+        import std.exception;
+
+        alias enforcex = enforce!SkeletonException;
+
+        const path = imagePath.baseName;
+
+        // Get the values
+        ConstructedBone result;
+        result.imagePath = imagePath;
+        result.bone      = boneInput.value;
+        result.variant   = variantInput.value;
+
+        // Check them
+        enforcex(result.bone.length,    path.format!"Lacking bone type for image %s");
+        enforcex(result.variant.length, path.format!"Lacking bone variant for image %s");
+
+        // Find out angle number for the bone
+        const options = targetPack.getOptions(format!"models/bone/%s/%s.png"(result.bone, result.variant));
+
+        result.angles = options.angles;
+
+        return result;
+
+    }
+
+}
+
+private GluiFrame failConstruction(string message) {
+
+    GluiFrame root;
+    return root = vframe(
+        .layout!(1, "center"),
+        .modalTheme,
+
+        label(message),
+        button(.layout!"end", "Close", { root.remove(); }),
     );
 
 }
@@ -151,26 +248,13 @@ do {
                 root.remove();
                 parentModal.remove();
 
-                // Add a status bar info
+                // Add status bar info
                 project.status.text = format!"Images exported to pack %s"(targetPack.name);
                 project.status.updateSize();
 
             }),
         ),
 
-    );
-
-}
-
-private GluiFrame failConstruction(string message) {
-
-    GluiFrame root;
-    return root = vframe(
-        .layout!(1, "center"),
-        .modalTheme,
-
-        label(message),
-        button(.layout!"end", "Close", { root.remove(); }),
     );
 
 }

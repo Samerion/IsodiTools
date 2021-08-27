@@ -56,7 +56,7 @@ SkeletonNode[] constructSkeleton(Pack pack, const ConstructedBone[] bones) @trus
             variants: [bone.variant],
 
             boneStart: [0, image.height - opaquePart.y, 0],
-            boneEnd: [0, opaquePart.h, 0],
+            boneEnd: [0, -opaquePart.h, 0],
             texturePosition: [-opaquePart.w/2, 0, 0],
         };
 
