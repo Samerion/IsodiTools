@@ -13,6 +13,8 @@ class Tree : GluiSpace {
 
     enum specialChildrenCount = 2;
 
+    private GluiFrame openDropdown;
+
     this(T...)(T args) {
 
         super(args);
@@ -51,9 +53,22 @@ class Tree : GluiSpace {
             // Add a button
             button(fillH, name, () {
 
+                // This dropdown is open
+                if (dropdown is openDropdown) {
+
+                    // Close it
+                    dropdown.hide();
+                    openDropdown = null;
+                    return;
+
+                }
+
+                // If there is a different open dropdown, hide it
+                if (openDropdown) openDropdown.hide();
+
                 // Toggle the dropdown
-                dropdown.toggleShow();
-                dropdown.updateSize();
+                dropdown.show();
+                openDropdown = dropdown;
 
             }),
 
