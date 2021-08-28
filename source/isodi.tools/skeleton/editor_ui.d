@@ -186,10 +186,10 @@ class SkeletonEditor : GluiSpace {
 
     }
 
-    void showBoneEditor(size_t nodeIndex) {
+    void showBoneEditor(size_t nodeIndex, GluiLabel idLabel) {
 
         // Set the bone
-        boneEditor.setTarget(model, nodeIndex);
+        boneEditor.setTarget(model, nodeIndex, idLabel);
 
         // Show the editor
         inactiveSpace.hide();
@@ -231,13 +231,14 @@ class SkeletonEditor : GluiSpace {
         import std.meta;
 
         GluiFrame thisNode;
+        GluiLabel idLabel;
 
         // Menu for the node
         alias Menu = AliasSeq!(
 
             "Edit node", {
 
-                showBoneEditor(boneIndex);
+                showBoneEditor(boneIndex, idLabel);
 
             },
 
@@ -328,6 +329,9 @@ class SkeletonEditor : GluiSpace {
         thisNode = bone.hidden
             ? tree.addNode(parent, bone.id, Menu)
             : tree.addNode(parent, bone.id, Menu, MenuVisisble);
+
+        idLabel = cast(GluiLabel) thisNode.children[0];
+        assert(idLabel !is null, "Invalid reference to tree label");
 
         assert(boneIndex == nodes.length, "Structure mismatch; wrong node count");
         nodes ~= thisNode;

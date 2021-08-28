@@ -14,6 +14,12 @@ import isodi.tools.skeleton.structs;
 
 final class BoneEditor : GluiSpace {
 
+    public {
+
+        GluiLabel idLabel;
+
+    }
+
     private {
 
         Model editedModel;
@@ -116,11 +122,12 @@ final class BoneEditor : GluiSpace {
         return editedIndex;
     }
 
-    void setTarget(Model model, size_t nodeIndex) {
+    void setTarget(Model model, size_t nodeIndex, GluiLabel idLabel) {
 
-        editedModel = model;
-        editedIndex = nodeIndex;
-        editedNode = model.getNode(nodeIndex);
+        this.editedModel = model;
+        this.editedIndex = nodeIndex;
+        this.editedNode = model.getNode(nodeIndex);
+        this.idLabel = idLabel;
 
         // Enable bone debug
         if (auto rlmodel = cast(RaylibModel) model) {
@@ -129,8 +136,10 @@ final class BoneEditor : GluiSpace {
 
         }
 
-        // Set ID
+        // Set data
+        typeInput.value = editedNode.name;
         idInput.value = editedNode.id;
+        errorLabel.text = "";
 
         // Update positions
         boneStartInput.floatValue = editedNode.boneStart;
@@ -188,12 +197,12 @@ final class BoneEditor : GluiSpace {
 
                 enforce(isValidName(typeInput.value), "Node type must only contain " ~ validCharactersMsg);
 
-                // Create the new node
+                // Create a new node
                 auto newNode = *editedNode;
                 newNode.name = typeInput.value;
 
-                // Check if it exists
-                enforce(collectException(model.getBone(newNode)), "No bone of this type exists");
+                // Check if the bone exists
+                enforce(!collectException(model.getBone(newNode)), "No bone of this type exists");
 
                 // Replace the old one
                 model.replaceNode(newNode, editedIndex);
@@ -207,7 +216,16 @@ final class BoneEditor : GluiSpace {
                 enforce(isValidName(idInput.value), "Node ID must only contain " ~ validCharactersMsg);
                 enforce(!model.getNode(idInput.value), "This ID already exists");
 
-                editedNode.id = idInput.value;
+                // Create a new node
+                auto newNode = *editedNode;
+                newNode.id = idInput.value;
+
+                // Replace the old one
+                model.replaceNode(newNode, editedIndex);
+                editedNode = model.getNode(editedIndex);
+
+                // Update the tree label
+                if (idLabel) idLabel.text = idInput.value;
 
             }
 
@@ -217,8 +235,12 @@ final class BoneEditor : GluiSpace {
 
             errorLabel.text = exc.msg;
             errorLabel.updateSize();
+            return;
 
         }
+
+        errorLabel.text = "";
+        errorLabel.updateSize();
 
     }
 
