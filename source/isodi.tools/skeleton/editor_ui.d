@@ -59,91 +59,101 @@ class SkeletonEditor : GluiSpace {
 
         // Create the main layout
         super(
-            vscrollFrame(
+            .layout!(1, "fill"),
+            objectTabTheme,
+
+            inactiveSpace = vframe(
+                label("Pick a model to\nedit its skeleton..."),
+            ),
+
+            // Main skeleton display
+            treeEditor = vscrollFrame(
                 .layout!(1, "fill"),
 
-                inactiveSpace = vframe(
-                    objectTabTheme,
-                    label("Pick a model to\nedit its skeleton..."),
-                ),
-
-                treeEditor = vspace(
+                // Skeleton options
+                vframe(
                     .layout!"fill",
-                    objectTabTheme,
+                    button(.layout!"fill", "Construct new", {
 
-                    vframe(
-                        .layout!"fill",
-                        button(.layout!"fill", "Construct new", {
-
-                            project.showModal = project.constructSkeletonWindow(this.model);
-
-                        }),
-                        button(.layout!"fill", "Save", {
-
-                            project.showModal = project.saveSkeletonWindow(this.model);
-
-                        }),
-                    ),
-                    tree = new Tree(.layout!"fill")
-                ),
-
-                boneEditor = vframe(
-                    .layout!"fill",
-                    objectTabTheme,
-
-                    nodeIDLabel = label("Bone"),
-
-                    label("Bone start"),
-                    boneStartInput = new Vector3Editor,
-
-                    label("Bone end"),
-                    boneEndInput = new Vector3Editor,
-
-                    label("Texture position"),
-                    texturePosInput = new Vector3Editor,
-
-                    mirrorButton = button(.layout!"fill", "Flip bone", {
-
-                        auto node = model.getNode(editedNode);
-                        node.mirror = !node.mirror;
-                        // TODO: recursive?
-
-                        updateMirrorButton(node);
+                        project.showModal = project.constructSkeletonWindow(this.model);
 
                     }),
+                    button(.layout!"fill", "Save", {
 
-                    button(.layout!"fill", "Invert bone ends", {
-
-                        float[3] sum(float[3] a, float[3] b) {
-
-                            return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-
-                        }
-
-                        float[3] invert(float[3] a) {
-
-                            return [-a[0], -a[1], -a[2]];
-
-                        }
-
-                        auto node = model.getNode(editedNode);
-
-                        // Invert bone start/end
-                        boneStartInput.floatValue = node.boneStart = sum(node.boneStart, node.boneEnd);
-                        boneEndInput.floatValue = node.boneEnd = invert(node.boneEnd);
-
-                        // Update textre position
-                        texturePosInput.floatValue = node.texturePosition = sum(node.texturePosition, node.boneEnd);
+                        project.showModal = project.saveSkeletonWindow(this.model);
 
                     }),
-
                 ),
+
+                // The node tree
+                tree = new Tree(.layout!"fill")
 
             ),
 
-            backButton = button(
-                .layout!"fill",
-                "Back", { showTree(); }
+            boneEditor = vspace(
+                .layout!(1, "fill"),
+
+                vscrollFrame(
+                    .layout!(1, "fill"),
+
+                    vframe(
+                        .layout!(1, "fill"),
+
+                        nodeIDLabel = label("Bone"),
+
+                        label("Bone start"),
+                        boneStartInput = new Vector3Editor,
+
+                        label("Bone end"),
+                        boneEndInput = new Vector3Editor,
+
+                        label("Texture position"),
+                        texturePosInput = new Vector3Editor,
+
+                        mirrorButton = button(.layout!"fill", "Flip bone", {
+
+                            auto node = model.getNode(editedNode);
+                            node.mirror = !node.mirror;
+                            // TODO: recursive?
+
+                            updateMirrorButton(node);
+
+                        }),
+
+                        button(.layout!"fill", "Invert bone ends", {
+
+                            float[3] sum(float[3] a, float[3] b) {
+
+                                return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+
+                            }
+
+                            float[3] invert(float[3] a) {
+
+                                return [-a[0], -a[1], -a[2]];
+
+                            }
+
+                            auto node = model.getNode(editedNode);
+
+                            // Invert bone start/end
+                            boneStartInput.floatValue = node.boneStart = sum(node.boneStart, node.boneEnd);
+                            boneEndInput.floatValue = node.boneEnd = invert(node.boneEnd);
+
+                            // Update textre position
+                            texturePosInput.floatValue = node.texturePosition = sum(node.texturePosition, node.boneEnd);
+
+                        }),
+
+                    ),
+
+                ),
+
+                backButton = button(
+                    .layout!"fill",
+                    "Back", { showTree(); }
+                ),
+
             ),
 
         );

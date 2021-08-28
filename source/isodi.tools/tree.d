@@ -9,7 +9,9 @@ import isodi.tools.themes;
 
 
 /// A Glui node representing a tree.
-class Tree : GluiSpace {
+class Tree : GluiFrame {
+
+    mixin DefineStyles;
 
     enum specialChildrenCount = 2;
 

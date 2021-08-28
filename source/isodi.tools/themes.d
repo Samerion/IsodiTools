@@ -136,7 +136,14 @@ shared static this() {
 
     objectTabTheme = theme.makeTheme!q{
 
+        import isodi.tools.tree;
+
+        // Add some padding
         GluiFrame.styleAdd.padding = 6;
+
+        // Exclude it from scroll frames and trees
+        GluiScrollFrame.styleAdd.padding = 0;
+        Tree.styleAdd.padding = 0;
 
     };
 
