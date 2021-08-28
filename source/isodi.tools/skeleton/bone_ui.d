@@ -32,6 +32,9 @@ final class BoneEditor : GluiSpace {
         Vector3Editor boneStartInput, boneEndInput, texturePosInput;
         GluiButton!() mirrorButton;
 
+        GluiButton!() visibilityButton;
+        bool nodeHidden;
+
     }
 
     this() {
@@ -47,6 +50,14 @@ final class BoneEditor : GluiSpace {
 
                 label("Node ID"),
                 idInput = textInput(""),
+
+                visibilityButton = button("Node visible", {
+
+                    nodeHidden = !nodeHidden;
+                    applyInfo();
+                    updateButtons();
+
+                }),
 
                 errorLabel = label(),
 
@@ -74,7 +85,7 @@ final class BoneEditor : GluiSpace {
                     editedNode.mirror = !editedNode.mirror;
                     // TODO: recursive?
 
-                    updateMirrorButton();
+                    updateButtons();
 
                 }),
 
@@ -139,6 +150,7 @@ final class BoneEditor : GluiSpace {
         // Set data
         typeInput.value = editedNode.name;
         idInput.value = editedNode.id;
+        nodeHidden = editedNode.hidden;
         errorLabel.text = "";
 
         // Update positions
@@ -147,7 +159,7 @@ final class BoneEditor : GluiSpace {
         texturePosInput.floatValue = editedNode.texturePosition;
 
         // Update buttons
-        updateMirrorButton();
+        updateButtons();
 
     }
 
@@ -192,21 +204,22 @@ final class BoneEditor : GluiSpace {
 
         try {
 
+            const visibilityChanged = editedNode.hidden != nodeHidden;
+            const typeChanged = editedNode.name != typeInput.value
+                || visibilityChanged;
+
+            auto newNode = *editedNode;
+
             // Update type
-            if (editedNode.name != typeInput.value) {
+            if (typeChanged) {
 
                 enforce(isValidName(typeInput.value), "Node type must only contain " ~ validCharactersMsg);
 
-                // Create a new node
-                auto newNode = *editedNode;
+                // Update the name
                 newNode.name = typeInput.value;
 
-                // Check if the bone exists
-                enforce(!collectException(model.getBone(newNode)), "No bone of this type exists");
-
-                // Replace the old one
-                model.replaceNode(newNode, editedIndex);
-                editedNode = model.getNode(editedIndex);
+                // Check if the bone exists (or node is hidden)
+                enforce(nodeHidden || !collectException(model.getBone(newNode)), "No bone of this type exists");
 
             }
 
@@ -216,16 +229,29 @@ final class BoneEditor : GluiSpace {
                 enforce(isValidName(idInput.value), "Node ID must only contain " ~ validCharactersMsg);
                 enforce(!model.getNode(idInput.value), "This ID already exists");
 
-                // Create a new node
-                auto newNode = *editedNode;
+                // Update the ID
                 newNode.id = idInput.value;
-
-                // Replace the old one
-                model.replaceNode(newNode, editedIndex);
-                editedNode = model.getNode(editedIndex);
 
                 // Update the tree label
                 if (idLabel) idLabel.text = idInput.value;
+
+            }
+
+            // Update visibility
+            if (visibilityChanged) {
+
+                // Checks the same as "type", if visibile
+                newNode.hidden = nodeHidden;
+
+            }
+
+            // Replace the old one
+            model.replaceNode(newNode, editedIndex);
+            editedNode = model.getNode(editedIndex);
+
+            if (auto rlmodel = cast(RaylibModel) model) {
+
+                rlmodel.nodeBoneDebug(editedIndex) = true;
 
             }
 
@@ -253,7 +279,11 @@ final class BoneEditor : GluiSpace {
 
     }
 
-    private void updateMirrorButton() {
+    private void updateButtons() {
+
+        visibilityButton.text = nodeHidden
+            ? "Node hidden"
+            : "Node visible";
 
         mirrorButton.text = editedNode.mirror
             ? "Unflip node"

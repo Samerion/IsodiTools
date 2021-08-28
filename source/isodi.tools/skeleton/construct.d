@@ -28,7 +28,7 @@ SkeletonNode[] constructSkeleton(Pack pack, const ConstructedBone[] bones) @trus
             hidden: true,
             name: "root",
             id: "root",
-            variants: [""],
+            variants: [],
             boneEnd: [0, 1, 0],
         }
 

@@ -70,14 +70,14 @@ class SkeletonEditor : GluiSpace {
                 // Skeleton options
                 vframe(
                     .layout!"fill",
-                    button(.layout!"fill", "Construct new", {
-
-                        project.showModal = project.constructSkeletonWindow(this.model);
-
-                    }),
                     button(.layout!"fill", "Save", {
 
                         project.showModal = project.saveSkeletonWindow(this.model);
+
+                    }),
+                    button(.layout!"fill", "Construct new", {
+
+                        project.showModal = project.constructSkeletonWindow(this.model);
 
                     }),
                 ),
@@ -252,6 +252,19 @@ class SkeletonEditor : GluiSpace {
 
                 // Add to the tree
                 addBoneNode(newNode);
+
+            },
+
+            "New node", {
+
+                SkeletonNode node = {
+                    name: "node",
+                    id: uniqueBoneID("node"),
+                    parent: boneIndex,
+                    hidden: true,
+                };
+
+                addBoneNode(node);
 
             },
 
