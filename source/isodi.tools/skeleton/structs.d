@@ -69,6 +69,15 @@ class Vector3Editor : GluiSpace {
 
     }
 
+    @property
+    void changed(void delegate() @safe dg) {
+
+        xInput.changed = dg;
+        yInput.changed = dg;
+        zInput.changed = dg;
+
+    }
+
     Vector3 value() const {
 
         import std.conv, std.exception;

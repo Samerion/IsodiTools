@@ -14,9 +14,10 @@ import isodi.tools.themes;
 import isodi.tools.project;
 
 import isodi.tools.skeleton.utils;
+import isodi.tools.skeleton.bone_ui;
+import isodi.tools.skeleton.crop_ui;
 import isodi.tools.skeleton.save_ui;
 import isodi.tools.skeleton.structs;
-import isodi.tools.skeleton.crop_ui;
 import isodi.tools.skeleton.construct_ui;
 
 
@@ -38,18 +39,14 @@ class SkeletonEditor : GluiSpace {
         Model _model;
 
         // Spaces
-        GluiSpace inactiveSpace, treeEditor, boneEditor;
+        GluiSpace inactiveSpace, treeSpace, boneSpace;
 
         // Tree editor
         Tree tree;
         SkeletonNode[] nodeClipboard;
 
         // Bone editor
-        size_t editedNode;
-        GluiLabel nodeIDLabel;
-        Vector3Editor boneStartInput, boneEndInput, texturePosInput;
-        GluiButton!() backButton;
-        GluiButton!() mirrorButton;
+        BoneEditor boneEditor;
 
     }
 
@@ -67,7 +64,7 @@ class SkeletonEditor : GluiSpace {
             ),
 
             // Main skeleton display
-            treeEditor = vscrollFrame(
+            treeSpace = vscrollFrame(
                 .layout!(1, "fill"),
 
                 // Skeleton options
@@ -90,66 +87,15 @@ class SkeletonEditor : GluiSpace {
 
             ),
 
-            boneEditor = vspace(
+            boneSpace = vspace(
                 .layout!(1, "fill"),
 
                 vscrollFrame(
                     .layout!(1, "fill"),
-
-                    vframe(
-                        .layout!(1, "fill"),
-
-                        nodeIDLabel = label("Bone"),
-
-                        label("Bone start"),
-                        boneStartInput = new Vector3Editor,
-
-                        label("Bone end"),
-                        boneEndInput = new Vector3Editor,
-
-                        label("Texture position"),
-                        texturePosInput = new Vector3Editor,
-
-                        mirrorButton = button(.layout!"fill", "Flip bone", {
-
-                            auto node = model.getNode(editedNode);
-                            node.mirror = !node.mirror;
-                            // TODO: recursive?
-
-                            updateMirrorButton(node);
-
-                        }),
-
-                        button(.layout!"fill", "Invert bone ends", {
-
-                            float[3] sum(float[3] a, float[3] b) {
-
-                                return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-
-                            }
-
-                            float[3] invert(float[3] a) {
-
-                                return [-a[0], -a[1], -a[2]];
-
-                            }
-
-                            auto node = model.getNode(editedNode);
-
-                            // Invert bone start/end
-                            boneStartInput.floatValue = node.boneStart = sum(node.boneStart, node.boneEnd);
-                            boneEndInput.floatValue = node.boneEnd = invert(node.boneEnd);
-
-                            // Update textre position
-                            texturePosInput.floatValue = node.texturePosition = sum(node.texturePosition, node.boneEnd);
-
-                        }),
-
-                    ),
-
+                    boneEditor = new BoneEditor(),
                 ),
 
-                backButton = button(
+                button(
                     .layout!"fill",
                     "Back", { showTree(); }
                 ),
@@ -224,7 +170,7 @@ class SkeletonEditor : GluiSpace {
     void nullify() {
 
         hideBoneEditor();
-        treeEditor.hide();
+        treeSpace.hide();
 
         _model = null;
         inactiveSpace.show();
@@ -234,7 +180,7 @@ class SkeletonEditor : GluiSpace {
     void showTree() {
 
         hideBoneEditor();
-        treeEditor.show();
+        treeSpace.show();
 
         inactiveSpace.hide();
 
@@ -242,58 +188,24 @@ class SkeletonEditor : GluiSpace {
 
     void showBoneEditor(size_t nodeIndex) {
 
-        import std.format;
-
-        auto node = model.getNode(nodeIndex);
-
         // Set the bone
-        editedNode = nodeIndex;
-
-        // Enable bone debug
-        if (auto rlmodel = cast(RaylibModel) model) {
-
-            rlmodel.nodeBoneDebug(editedNode) = true;
-
-        }
-
-        // Set ID
-        nodeIDLabel.text = format!"Bone %s"(node.id);
-
-        // Update positions
-        boneStartInput.floatValue = node.boneStart;
-        boneEndInput.floatValue = node.boneEnd;
-        texturePosInput.floatValue = node.texturePosition;
-
-        // Update buttons
-        updateMirrorButton(node);
+        boneEditor.setTarget(model, nodeIndex);
 
         // Show the editor
         inactiveSpace.hide();
 
-        boneEditor.show();
-        backButton.show();
-
-        treeEditor.hide();
+        boneSpace.show();
+        treeSpace.hide();
 
     }
 
     private void hideBoneEditor() {
 
-        // Ignore if the editor isn't visible
-        // Below code assumes it is and will crash otherwise
-        if (boneEditor.hidden) return;
+        // Clear the target
+        boneEditor.clearTarget();
 
         // Hide the editor
-        boneEditor.hide();
-        backButton.hide();
-
-        // If there's a model assigned
-        if (auto model = cast(RaylibModel) _model) {
-
-            // Clear node debug
-            model.nodeBoneDebug(editedNode) = false;
-
-        }
+        boneSpace.hide();
 
     }
 
@@ -311,21 +223,6 @@ class SkeletonEditor : GluiSpace {
         tree.sortNodes(parent);
 
         return newIndex;
-
-    }
-
-    protected override void drawImpl(Rectangle paddingBox, Rectangle contentBox) {
-
-        super.drawImpl(paddingBox, contentBox);
-
-        if (!boneEditor.hidden) {
-
-            auto node = model.getNode(editedNode);
-            node.boneStart = boneStartInput.floatValue;
-            node.boneEnd = boneEndInput.floatValue;
-            node.texturePosition = texturePosInput.floatValue;
-
-        }
 
     }
 
@@ -471,16 +368,6 @@ class SkeletonEditor : GluiSpace {
         }
 
         return targetID;
-
-    }
-
-    private void updateMirrorButton(const SkeletonNode* node) {
-
-        mirrorButton.text = node.mirror
-            ? "Unflip node"
-            : "Flip node";
-
-        updateSize();
 
     }
 
