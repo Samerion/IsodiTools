@@ -108,8 +108,24 @@ final class BoneEditor : GluiSpace {
 
                 mirrorButton = button(.layout!"fill", "Flip bone", {
 
-                    editedNode.mirror = !editedNode.mirror;
-                    // TODO: recursive?
+                    import std.algorithm;
+
+                    size_t[] parents;
+
+                    foreach (i, node; model.skeletonBones[editedIndex..$]) {
+
+                        // Skip unrelated nodes
+                        if (i != 0 && !parents.canFind(node.parent)) continue;
+
+                        const nodeIndex = editedIndex+i;
+
+                        // Flip this node
+                        model.getNode(nodeIndex).mirror = !node.mirror;
+
+                        // List the node so children get affected too
+                        parents ~= nodeIndex;
+
+                    }
 
                     updateButtons();
 
