@@ -182,6 +182,14 @@ final class BoneEditor : GluiSpace {
 
                 }),
 
+                label("Test rotation"),
+                hframe(
+                    button("X", () => testBone(0)),
+                    button("Y", () => testBone(1)),
+                    button("Z", () => testBone(2)),
+                ),
+                label("Note: rotation is currently extremely broken in Isodi. Use with care."),
+
             ),
 
         );
@@ -446,6 +454,51 @@ final class BoneEditor : GluiSpace {
         // Clear errors on success
         errorLabel.text = "";
         errorLabel.updateSize();
+
+    }
+
+    /// Run a test on the bone.
+    /// Params:
+    ///     axis = Axis to test. 0=x, 1=y, 2=z
+    private void testBone(ubyte axis)
+    in (axis <= 2, "Invalid axis")
+    do {
+
+        import core.time;
+        import std.typecons;
+
+        // Another axis to affect to emphasis the other one
+        const otherAxis = (axis + 1) % 3;
+
+        // Create an animation for the bone with 2 parts
+        AnimationPart[] parts;
+        parts.length = 6;
+
+        // Rotate the bone on another axis to 45°
+        float[3] rotationA = 0;
+        rotationA[otherAxis % 3] = 45;
+
+        parts[0].length = 1;
+        parts[0].bone.require(editedNode.id).rotate = rotationA.nullable;
+
+        // Rotate on this axis by 90° four times to make a circle
+        foreach (i; 0..4) {
+
+            float[3] rotationB = 0;
+            rotationB[axis] = 90 + i*90;
+            rotationB[otherAxis] = 45;
+
+            parts[i+1].length = i+1;  // Bug in isodi
+            parts[i+1].bone.require(editedNode.id).rotate = rotationB.nullable;
+
+        }
+
+        float[3] rotationC = 0;
+        parts[5].length = 5;
+        parts[5].bone.require(editedNode.id).rotate = rotationC.nullable;
+
+        // Run the animation
+        model.animate(parts, 5.seconds);
 
     }
 
