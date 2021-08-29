@@ -2,10 +2,10 @@ module isodi.tools.skeleton.save;
 
 import std.json;
 import isodi.resource;
+
+import isodi.tools.exception;
 // rcdata.json writing support?
 
-// TODO: implement an univeral "are you sure?" box for all destructive operations by throwing an exception with
-// a "proceed" method.
 // TODO: unify using file pickers for saving files
 
 
@@ -20,8 +20,8 @@ void saveSkeleton(string path, SkeletonNode[] skeleton) {
 
     import std.file;
 
-    // TODO check if the path exists and isn't a directory
-    // TODO check for existing
+    // Target path can't be a directory
+    enforce!FailureException(!path.exists || !path.isDir, "Cannot write, target is a directory.");
 
     // Create the JSON
     JSONValue root;
@@ -73,7 +73,12 @@ void saveSkeleton(string path, SkeletonNode[] skeleton) {
 
     }
 
-    write(path, root.toJSON(true));
+    // Ask before overwriting stuff
+    NeedsConfirmException.enforce(!path.exists, "File already exists. Overwrite?", {
+
+        write(path, root.toJSON(true));
+
+    });
 
 }
 

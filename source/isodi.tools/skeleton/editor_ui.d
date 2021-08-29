@@ -12,6 +12,7 @@ import isodi.raylib.model;
 import isodi.tools.tree;
 import isodi.tools.themes;
 import isodi.tools.project;
+import isodi.tools.exception;
 
 import isodi.tools.skeleton.utils;
 import isodi.tools.skeleton.bone_ui;
@@ -165,6 +166,8 @@ class SkeletonEditor : GluiSpace {
             addBoneNode(parent, i, bone);
 
         }
+
+        // TODO: if the tree is empty, add "New node"/"Paste node" buttons
 
         // Sort the nodes
         tree.sortNodes();

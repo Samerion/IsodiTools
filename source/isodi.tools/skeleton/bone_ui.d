@@ -6,6 +6,7 @@ import isodi;
 import isodi.resource;
 import isodi.raylib.model;
 
+import isodi.tools.exception;
 import isodi.tools.skeleton.structs;
 import isodi.tools.skeleton.editor_ui;
 
@@ -145,7 +146,8 @@ final class BoneEditor : GluiSpace {
 
                     // Require there to be a parent
                     // TODO: error message?
-                    if (editedIndex == 0) return;
+                    enforce!FailureException(editedIndex != 0,
+                        "Can't replace parent for the root node, it has no parent!");
 
                     // Get this node
                     auto model = editedModel;

@@ -2,10 +2,11 @@ module isodi.tools.exception;
 
 import glui;
 import core.thread;
-import std.exception;
 
 import isodi.tools.themes;
 import isodi.tools.project;
+
+public import std.exception;
 
 
 @safe:
@@ -89,6 +90,8 @@ class NeedsConfirmException : FailureException {
 
         }
 
+        else proceedCb();
+
     }
 
     static void enforceFibered(T)(T condition, lazy string msg) @trusted {
@@ -120,7 +123,7 @@ class NeedsConfirmException : FailureException {
             .layout!(1, "center"),
             .modalTheme,
 
-            label(.layout!"center", "Operation failed"),
+            label(.layout!"center", "Confirm action?"),
             label(msg),
             hframe(
                 .layout!"end",

@@ -38,8 +38,6 @@ SkeletonNode[] constructSkeleton(Pack pack, const ConstructedBone[] bones) @trus
 
     assert(Fiber.getThis, "constructSkeleton requires to be ran in a fiber.");
 
-    // TODO: Ensure no bone would get overriden
-
     // Load each bone
     foreach (bone; bones) {
 

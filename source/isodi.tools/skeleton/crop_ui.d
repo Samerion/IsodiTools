@@ -10,6 +10,8 @@ import std.traits;
 
 import isodi.tools.themes;
 import isodi.tools.project;
+import isodi.tools.exception;
+
 import isodi.tools.skeleton.crop;
 import isodi.tools.skeleton.utils;
 import isodi.tools.skeleton.structs;
@@ -33,7 +35,9 @@ GluiFrame cropBoneWindow(Project project, BoneResource resource, SkeletonNode bo
     auto hInput = textInput("");
 
     targetBoneInput.value = bone.name;
-    targetVariantInput.value = bone.variants[0];  // TODO
+    targetVariantInput.value = bone.variants.length
+        ? bone.variants[0]
+        : "";  // TODO
 
     auto table = vframe();
     CropBoneRow[] angles;
@@ -111,7 +115,9 @@ GluiFrame cropBoneWindow(Project project, BoneResource resource, SkeletonNode bo
 
                 }
                 catch (ConvException) {
-                    // TODO error message
+
+                    throw new FailureException("Target width/height must be a number.");
+
                 }
 
             }),
@@ -320,6 +326,9 @@ private GluiFrame confirmCropWindow(GluiFrame parentModal, Project project, stri
 do {
 
     import std.file, std.path, std.format;
+
+    enforce!FailureException(type.length, "No target type specified.");
+    enforce!FailureException(variant.length, "No target variant specified.");
 
     const pack = project.display.packs[0];
     const path = bonePath(pack, type, variant);
