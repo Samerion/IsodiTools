@@ -44,6 +44,7 @@ class SkeletonEditor : GluiSpace {
 
         // Tree editor
         Tree tree;
+        GluiFrame emptyTreeFrame;
         SkeletonNode[] nodeClipboard;
 
         // Bone editor
@@ -84,7 +85,42 @@ class SkeletonEditor : GluiSpace {
                 ),
 
                 // The node tree
-                tree = new Tree(.layout!"fill")
+                tree = new Tree(.layout!"fill"),
+
+                emptyTreeFrame = vframe(
+
+                    vframe(
+
+                        label("The node tree is empty!\nStart by adding some nodes..."),
+                        label(),
+
+                    ),
+
+                    button(.layout!"fill", "Add an empty node", {
+
+                        auto node = blankNode(0);
+                        model.addNode(node);
+                        addBoneNode(tree, 0, node);
+                        showTree();
+
+                    }),
+
+                    button(.layout!"fill", "Paste nodes", {
+
+                        if (nodeClipboard.length == 0) {
+
+                            project.status.text = "The clipboard is empty!";
+                            project.status.updateSize();
+                            return;
+
+                        }
+
+                        model.changeSkeleton(nodeClipboard);
+                        makeTree();
+
+                    }),
+
+                ),
 
             ),
 
@@ -167,8 +203,6 @@ class SkeletonEditor : GluiSpace {
 
         }
 
-        // TODO: if the tree is empty, add "New node"/"Paste node" buttons
-
         // Sort the nodes
         tree.sortNodes();
 
@@ -192,6 +226,21 @@ class SkeletonEditor : GluiSpace {
         treeSpace.show();
 
         inactiveSpace.hide();
+
+        // Tree is empty, hide it
+        if (model.skeletonBones.length == 0) {
+
+            tree.hide();
+            emptyTreeFrame.show();
+
+        }
+
+        else {
+
+            tree.show();
+            emptyTreeFrame.hide();
+
+        }
 
     }
 
@@ -282,14 +331,7 @@ class SkeletonEditor : GluiSpace {
 
             "New node", {
 
-                SkeletonNode node = {
-                    name: "node",
-                    id: uniqueBoneID("node"),
-                    parent: boneIndex,
-                    hidden: true,
-                };
-
-                addBoneNode(node);
+                addBoneNode(blankNode(boneIndex));
 
             },
 
@@ -374,6 +416,19 @@ class SkeletonEditor : GluiSpace {
         nodes ~= thisNode;
 
         updateSize();
+
+    }
+
+    private SkeletonNode blankNode(size_t parent) {
+
+        SkeletonNode node = {
+            name: "node",
+            id: uniqueBoneID("node"),
+            parent: parent,
+            hidden: true,
+        };
+
+        return node;
 
     }
 
