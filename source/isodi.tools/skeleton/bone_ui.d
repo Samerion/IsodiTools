@@ -145,7 +145,6 @@ final class BoneEditor : GluiSpace {
                     import std.algorithm;
 
                     // Require there to be a parent
-                    // TODO: error message?
                     enforce!FailureException(editedIndex != 0,
                         "Can't replace parent for the root node, it has no parent!");
 

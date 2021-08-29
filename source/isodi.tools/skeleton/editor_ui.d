@@ -253,14 +253,30 @@ class SkeletonEditor : GluiSpace {
 
             "Duplicate", {
 
-                // TODO: duplicate recursively
+                import std.algorithm;
 
-                // Create the node
-                auto newNode = *model.getNode(boneIndex);
-                newNode.id = uniqueBoneID(bone.id);
+                size_t[] parents;
+                size_t[] newIndexes;
 
-                // Add to the tree
-                addBoneNode(newNode);
+                foreach (i, node; model.skeletonBones[boneIndex..$]) {
+
+                    // Ignore unrelated nodes
+                    if (i != 0 && !parents.canFind(node.parent)) continue;
+
+                    // Create the node
+                    auto newNode = node;
+                    newNode.id = uniqueBoneID(newNode.id);
+
+                    // Update the parent
+                    if (i) newNode.parent = newIndexes[newNode.parent - boneIndex];
+
+                    // Add to the tree
+                    newIndexes ~= addBoneNode(newNode);
+
+                    // Register as a parent
+                    parents ~= boneIndex + i;
+
+                }
 
             },
 
