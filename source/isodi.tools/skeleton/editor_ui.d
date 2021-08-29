@@ -355,7 +355,6 @@ class SkeletonEditor : GluiSpace {
 
             "Crop bone...", {
 
-                // TODO: read the exact variant used in the model
                 const options = model.getBone(bone);
                 project.showModal = cropBoneWindow(project, options, bone);
 

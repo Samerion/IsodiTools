@@ -6,8 +6,6 @@ import isodi.resource;
 import isodi.tools.exception;
 // rcdata.json writing support?
 
-// TODO: unify using file pickers for saving files
-
 
 @safe:
 

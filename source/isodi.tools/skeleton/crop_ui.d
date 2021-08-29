@@ -6,6 +6,7 @@ import raylib;
 import isodi;
 import isodi.resource;
 
+import std.file;
 import std.traits;
 
 import isodi.tools.themes;
@@ -22,22 +23,32 @@ import isodi.tools.skeleton.structs;
 
 /// A window for cropping bones into multiple ones. For example, a pair of hands could be imported as a single bone,
 /// which is unwanted in the final model. This tool will allow cropping that bone into two.
-GluiFrame cropBoneWindow(Project project, BoneResource resource, SkeletonNode bone, string variant = null) {
-    // TODO: variant argument
+GluiFrame cropBoneWindow(Project project, BoneResource resource, SkeletonNode bone) {
 
+    import std.format;
     import std.array, std.range, std.algorithm;
 
     GluiFrame root;
+    GluiFilePicker targetPicker;
 
-    auto targetBoneInput = textInput("");
-    auto targetVariantInput = textInput("");
+    enum savingAs = "Saving as %s";
+
+    auto targetButton = button(format!savingAs(resource.match), {
+
+        project.showModal = targetPicker;
+
+    });
+    targetPicker = filePicker(.modalTheme, "Pick a PNG file to save as.", {
+
+        targetButton.text = format!savingAs(targetPicker.value);
+        targetPicker.remove();
+
+    });
+    targetPicker.value = resource.match;
+    targetPicker.cancelled = () => targetPicker.remove();
+
     auto wInput = textInput("");
     auto hInput = textInput("");
-
-    targetBoneInput.value = bone.name;
-    targetVariantInput.value = bone.variants.length
-        ? bone.variants[0]
-        : "";  // TODO
 
     auto table = vframe();
     CropBoneRow[] angles;
@@ -77,14 +88,7 @@ GluiFrame cropBoneWindow(Project project, BoneResource resource, SkeletonNode bo
         label(.layout!"center", "Crop bone"),
 
         vframe(
-            hspace(
-                label("New bone name: "),
-                targetBoneInput,
-            ),
-            hspace(
-                label("New bone variant: "),
-                targetVariantInput,
-            ),
+            targetButton,
             hspace(
                 label("New bone size: "),
                 wInput,
@@ -109,9 +113,26 @@ GluiFrame cropBoneWindow(Project project, BoneResource resource, SkeletonNode bo
                     const pack = project.display.packs[0];
                     const size = Vector2(wInput.value.to!int, hInput.value.to!int);
                     const positions = angles.map!"a.chosenPosition".array;
+                    const path = targetPicker.value;
 
-                    project.showModal = confirmCropWindow(root, project, targetBoneInput.value,
-                        targetVariantInput.value, resource, size, positions);
+                    enforce!FailureException(!path.exists || !path.isDir, "Cannot save as a directory");
+
+                    NeedsConfirmException.enforce(!path.exists, "Target file already exists. Overwrite?", {
+
+                        // Crop the bone
+                        makeCroppedBone(path, resource, size, positions);
+
+                        // Close the modal
+                        root.remove();
+
+                        // Reload resources
+                        project.display.reloadResources();
+
+                        // Add a status bar info
+                        project.status.text = format!"Bone exported to %s"(path);
+                        project.status.updateSize();
+
+                    });
 
                 }
                 catch (ConvException) {
@@ -318,54 +339,5 @@ private Texture angleTexture(BoneResource resource, uint angle) @trusted {
     image = ImageFromImage(image, rect);
 
     return LoadTextureFromImage(image);
-
-}
-
-private GluiFrame confirmCropWindow(GluiFrame parentModal, Project project, string type, string variant,
-    Parameters!cropBone params)
-do {
-
-    import std.file, std.path, std.format;
-
-    enforce!FailureException(type.length, "No target type specified.");
-    enforce!FailureException(variant.length, "No target variant specified.");
-
-    const pack = project.display.packs[0];
-    const path = bonePath(pack, type, variant);
-    const boneExistsWarning = path.exists
-        ? "Warning: This will replace an existing bone and cannot be undone."
-        : "";
-
-    GluiFrame root;
-
-    return root = vframe(
-        .layout!(1, "center"),
-        .modalTheme,
-
-        label(.layout!"center", "Confirm crop?"),
-        label(format!"The cropped bone %s/%s will be placed in pack %s."(type, variant, pack.name)),
-        label(boneExistsWarning),
-
-        hframe(
-            .layout!"end",
-            button("Cancel", () => root.remove()),
-            button("Perform the crop", {
-
-                makeCroppedBone(path, params);
-
-                // Close the modals
-                parentModal.remove();
-                root.remove();
-
-                // Reload resources
-                project.display.reloadResources();
-
-                // Add a status bar info
-                project.status.text = format!"Bone exported to pack %s"(pack.name);
-                project.status.updateSize();
-
-            }),
-        ),
-    );
 
 }

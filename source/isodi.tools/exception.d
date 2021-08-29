@@ -80,7 +80,7 @@ class NeedsConfirmException : FailureException {
 
     mixin basicExceptionCtors;
 
-    static void enforce(T)(T condition, lazy string msg, lazy void delegate() @safe proceedCb) {
+    static void enforce(T)(T condition, lazy string msg, void delegate() @safe proceedCb) {
 
         if (!condition) {
 
