@@ -70,12 +70,12 @@ class SkeletonEditor : GluiSpace {
                 // Skeleton options
                 vframe(
                     .layout!"fill",
-                    button(.layout!"fill", "Save", {
+                    button(.layout!"fill", "Save...", {
 
                         project.showModal = project.saveSkeletonWindow(this.model);
 
                     }),
-                    button(.layout!"fill", "Construct new", {
+                    button(.layout!"fill", "Construct new...", {
 
                         project.showModal = project.constructSkeletonWindow(this.model);
 
@@ -92,7 +92,7 @@ class SkeletonEditor : GluiSpace {
 
                 vscrollFrame(
                     .layout!(1, "fill"),
-                    boneEditor = new BoneEditor(),
+                    boneEditor = new BoneEditor(this),
                 ),
 
                 button(
@@ -141,6 +141,8 @@ class SkeletonEditor : GluiSpace {
 
     void makeTree() {
 
+        import std.format;
+
         // Reset this tree
         tree.children = [];
         nodes = [];
@@ -150,6 +152,10 @@ class SkeletonEditor : GluiSpace {
 
         // Add the bones
         foreach (i, bone; model.skeletonBones) {
+
+            assert(!i || bone.parent < nodes.length, format!"node %s at index %s has invalid parent %s"(
+                bone.id, i, bone.parent
+            ));
 
             // Get the parent
             auto parent = i == 0
@@ -236,7 +242,7 @@ class SkeletonEditor : GluiSpace {
         // Menu for the node
         alias Menu = AliasSeq!(
 
-            "Edit node", {
+            "Edit node...", {
 
                 showBoneEditor(boneIndex, idLabel);
 
@@ -268,7 +274,7 @@ class SkeletonEditor : GluiSpace {
 
             },
 
-            "Cut node", {
+            "Cut node", () @trusted {
 
                 import std.format;
 
@@ -328,7 +334,7 @@ class SkeletonEditor : GluiSpace {
         // Menu for the node, if node isn't hidden
         alias MenuVisisble = AliasSeq!(
 
-            "Crop bone", {
+            "Crop bone...", {
 
                 // TODO: read the exact variant used in the model
                 const options = model.getBone(bone);

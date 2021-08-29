@@ -7,6 +7,7 @@ import isodi.resource;
 import isodi.raylib.model;
 
 import isodi.tools.skeleton.structs;
+import isodi.tools.skeleton.editor_ui;
 
 
 @safe:
@@ -21,6 +22,8 @@ final class BoneEditor : GluiSpace {
     }
 
     private {
+
+        SkeletonEditor skeletonEditor;
 
         Model editedModel;
         size_t editedIndex;
@@ -37,7 +40,9 @@ final class BoneEditor : GluiSpace {
 
     }
 
-    this() {
+    this(SkeletonEditor editor) {
+
+        this.skeletonEditor = editor;
 
         super(
             .layout!(1, "fill"),
@@ -114,6 +119,49 @@ final class BoneEditor : GluiSpace {
 
                 }),
 
+                button(.layout!"fill", "Replace parent", () @trusted {
+
+                    import std.algorithm;
+
+                    // Require there to be a parent
+                    // TODO: error message?
+                    if (editedIndex == 0) return;
+
+                    // Get this node
+                    auto model = editedModel;
+                    const thisNode = *editedNode;
+                    const thisIndex = editedIndex;
+                    const parent = model.getNode(thisNode.parent);
+
+                    // Clear the target, since the index will change
+                    clearTarget();
+
+                    // Remove this node from the tree
+                    auto removedNodes = model.removeNodes(thisNode.id);
+
+                    // Create a copy of this node to replace the parent
+                    auto newNode = cast() thisNode;
+                    newNode.parent = parent.parent;
+                    model.replaceNode(newNode, thisNode.parent);
+
+                    // Push children of this node into the tree
+                    size_t[] newIndexes = [thisNode.parent];
+
+                    foreach (node; removedNodes[1..$]) {
+
+                        // Update the parent
+                        node.parent = newIndexes[node.parent];
+
+                        // Add this node
+                        newIndexes ~= model.addNode(node);
+
+                    }
+
+                    // Recreate the tree
+                    skeletonEditor.makeTree();
+
+                }),
+
             ),
 
         );
@@ -134,6 +182,8 @@ final class BoneEditor : GluiSpace {
     }
 
     void setTarget(Model model, size_t nodeIndex, GluiLabel idLabel) {
+
+        clearTarget();
 
         this.editedModel = model;
         this.editedIndex = nodeIndex;
@@ -172,6 +222,10 @@ final class BoneEditor : GluiSpace {
             model.nodeBoneDebug(editedIndex) = false;
 
         }
+
+        editedModel = null;
+        editedNode = null;
+        editedIndex = 0;
 
     }
 
