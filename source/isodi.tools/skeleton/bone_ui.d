@@ -15,6 +15,8 @@ import isodi.tools.skeleton.editor_ui;
 
 final class BoneEditor : GluiSpace {
 
+    enum validCharactersMsg = "alphanumeric characters, underscores (_), dashes (-) and dots (.)";
+
     public {
 
         GluiLabel idLabel;
@@ -25,18 +27,25 @@ final class BoneEditor : GluiSpace {
 
         SkeletonEditor skeletonEditor;
 
+        // Editor state
         Model editedModel;
         size_t editedIndex;
         SkeletonNode* editedNode;
 
+        // Data inputs
         GluiTextInput typeInput, idInput;
         GluiLabel errorLabel;
 
-        Vector3Editor boneStartInput, boneEndInput, texturePosInput;
-        GluiButton!() mirrorButton;
-
+        // Visibility
         GluiButton!() visibilityButton;
         bool nodeHidden;
+
+        // Variants
+        GluiSpace variantSpace;
+
+        // Position
+        Vector3Editor boneStartInput, boneEndInput, texturePosInput;
+        GluiButton!() mirrorButton;
 
     }
 
@@ -64,7 +73,18 @@ final class BoneEditor : GluiSpace {
 
                 }),
 
-                errorLabel = label(),
+                hframe(
+                    .layout!(1, "fill"),
+                    errorLabel = label(.layout!(1, "fill")),
+                ),
+
+            ),
+
+            vframe(
+                .layout!"fill",
+
+                label(.layout!"fill", "Default node variants"),
+                variantSpace = vspace(.layout!"fill")
 
             ),
 
@@ -203,6 +223,9 @@ final class BoneEditor : GluiSpace {
         nodeHidden = editedNode.hidden;
         errorLabel.text = "";
 
+        // Load variants
+        loadVariants();
+
         // Update positions
         boneStartInput.floatValue = editedNode.boneStart;
         boneEndInput.floatValue = editedNode.boneEnd;
@@ -229,6 +252,34 @@ final class BoneEditor : GluiSpace {
 
     }
 
+    private void loadVariants() {
+
+        const variants = editedNode.variants;
+
+        // Prepare space for the variants + one more box to allow adding new variants
+        variantSpace.children.length = variants.length + 1;
+
+        // Iterate on the text inputs to fill them with data
+        foreach (i, ref child; variantSpace.children[]) {
+
+            // Get each text input
+            auto input = cast(GluiTextInput) child;
+
+            // No input here? Create a new one
+            if (!input) input = variantTextInput();
+
+            // Set its value to a variant, except for the last one
+            input.value = i < variants.length
+                ? variants[i]
+                : "";
+
+            // Replace the old node
+            child = input;
+
+        }
+
+    }
+
     private void addCallbacks() {
 
         // Update node info
@@ -242,19 +293,17 @@ final class BoneEditor : GluiSpace {
 
     }
 
+    private bool isValidName(string name) {
+
+        import std.uni, std.algorithm;
+
+        return name.all!(a => a.isAlphaNum || a == '_' || a == '-' || a == '.');
+
+    }
+
     private void applyInfo() {
 
         import std.exception;
-
-        bool isValidName(string name) {
-
-            import std.uni, std.algorithm;
-
-            return name.all!(a => a.isAlphaNum || a == '_' || a == '-' || a == '.');
-
-        }
-
-        enum validCharactersMsg = "alphanumeric characters, underscores (_), dashes (-) and dots (.)";
 
         try {
 
@@ -313,12 +362,88 @@ final class BoneEditor : GluiSpace {
 
         catch (Exception exc) {
 
-            errorLabel.text = exc.msg;
-            errorLabel.updateSize();
+            showError(exc.msg);
             return;
 
         }
 
+        errorLabel.text = "";
+        errorLabel.updateSize();
+
+    }
+
+    /// Apply inputted variants.
+    private void applyVariants() {
+
+        import std.string;
+
+        editedNode.variants.length = 0;
+        editedNode.variants.reserve = variantSpace.children.length;
+
+        // Check each variant
+        foreach (i, child; variantSpace.children) {
+
+            auto input = cast(GluiTextInput) child;
+
+            const lastInput = i+1 == variantSpace.children.length;
+
+            // Input empty
+            if (input.value == "") {
+
+                // Ignore if focused or it's the last input field
+                if (input.isFocused || lastInput) continue;
+
+                // Remove the child
+                input.remove();
+                updateSize();
+                continue;
+
+            }
+
+            // Invalid text
+            if (!isValidName(input.value)) {
+
+                showError(format!"Variant name %s is invalid, it should only contain %s"(
+                    input.value, validCharactersMsg
+                ));
+
+                updateSize();
+                return;
+
+            }
+
+            // Add the node
+            editedNode.variants ~= input.value;
+
+            // This is the last input, we need to add another one
+            if (lastInput) {
+
+                variantSpace.children ~= variantTextInput();
+                updateSize();
+
+            }
+
+        }
+
+        // Try to reload the bone
+        try {
+
+            // Check if the variants exist
+            auto boneExists = editedModel.getBone(*editedNode);
+
+            // Load the bone
+            editedModel.replaceNode(*editedNode, editedIndex);
+
+        }
+
+        catch (Exception exc) {
+
+            showError(exc.msg);
+            return;
+
+        }
+
+        // Clear errors on success
         errorLabel.text = "";
         errorLabel.updateSize();
 
@@ -344,6 +469,33 @@ final class BoneEditor : GluiSpace {
             : "Flip node";
 
         updateSize();
+
+    }
+
+    /// Create a text input for altering variants
+    private GluiTextInput variantTextInput() {
+
+        auto newInput = textInput(.layout!"fill", "Add a new variant...");
+        newInput.changed = &applyVariants;
+        return newInput;
+
+    }
+
+    /// Show an error message.
+    ///
+    /// Note this is pretty annoying and breaks scroll on long messages. It would be helpful to introduce a different
+    /// error system for the inputs, but I have no idea what it should be.
+    private void showError(string msg) {
+
+        import std.conv;
+        import std.algorithm;
+
+        // Remove duplicate spaces; workaround for https://github.com/Samerion/Glui/issues/26
+        msg = msg.uniq!q{ a == ' ' && b == ' ' }.text;
+
+        // Set the message
+        errorLabel.text = msg;
+        errorLabel.updateSize();
 
     }
 
