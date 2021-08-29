@@ -188,6 +188,56 @@ struct Objects {
 
     }
 
+    /// Register a model within the project.
+    void registerModel(Model model) {
+
+        import isodi.raylib.model : RaylibModel;
+
+        if (auto rlmodel = cast(RaylibModel) model) {
+
+            rlmodel.positionDebug = true;
+
+        }
+
+        GluiNode modelNode;
+        modelNode = objectList.addNode(modelList, format!"Model %s"(model.id),
+
+            "Edit skeleton", {
+
+                skeletonEditor.model = model;
+
+            },
+
+            "Camera focus", {
+
+                import isodi.camera;
+
+                project.display.camera.offset = Camera.Offset(
+                    model.position.x,
+                    model.position.y,
+                    model.position.height.top
+                );
+
+            },
+
+            "Remove model", {
+
+                // Remove the model from the skeleton editor if it's the active one
+                if (skeletonEditor.model is model) {
+
+                    skeletonEditor.model = null;
+
+                }
+
+                project.display.removeModel(model);
+                modelNode.remove();
+
+            },
+
+        );
+
+    }
+
     private GluiFrame makeTab(string name, GluiNode content) {
 
         GluiButton!() collapseButton;

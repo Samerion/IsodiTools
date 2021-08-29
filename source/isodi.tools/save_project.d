@@ -5,14 +5,18 @@ import rcdata.utils;
 
 import std.file;
 import std.array;
+import std.range;
 import std.traits;
 import std.string;
 import std.algorithm;
 import std.exception;
 
+import std.stdio : writefln;
+
 import isodi.tilemap;
 
 import isodi.tools.project;
+import isodi.tools.save_model;
 
 
 @safe:
@@ -27,13 +31,24 @@ struct FileVersion {
 
     static FileVersion current = {
         major: 0,
-        minor: 1,
+        minor: 2,
         patch: 0,
     };
 
     string toString() {
 
         return format!"%s.%s.%s"(major, minor, patch);
+
+    }
+
+    /// Check if the file version has model support.
+    bool hasModels() {
+
+        // Supported since 0.2.0
+        if (major == 0) return minor >= 2;
+
+        // Other major surely have it
+        else return true;
 
     }
 
@@ -79,6 +94,14 @@ ubyte[] saveProject(Project project) @trusted {
     // Note: chunking does not apply here, but on export
     saveTilemap(project.display, buffer);
 
+    // Write models
+    bin.get!ulong(project.display.modelCount);
+    foreach (model; project.display.models) {
+
+        saveModel(model, buffer);
+
+    }
+
     return buffer[];
 
 }
@@ -97,6 +120,7 @@ Project loadProject(string filename) @trusted {
 Project loadProject(ubyte[] data) @trusted {
 
     auto bin = rcbinParser(data);
+    FileVersion ver;
 
     // Check the header
     {
@@ -104,7 +128,8 @@ Project loadProject(ubyte[] data) @trusted {
         const header = bin.read!FileHeaderType;
         enforce(header == FileHeader, "Given file is not a project file.");
 
-        const ver = bin.read!FileVersion;
+        // Read the version
+        bin.get(ver);
         const current = FileVersion.current;
 
         const error = format!"Project version %s can't be read, "(ver);
@@ -136,8 +161,29 @@ Project loadProject(ubyte[] data) @trusted {
     auto packs = bin.read!(string[]);
     project.packs.addPack(packs);
 
+    writefln!"loading tilemaps";
+
     // Load the rest as a tilemap
-    project.display.loadTilemap(data);
+    project.display.loadTilemap(refRange(&data));
+
+    // TODO: lazyload with fibers
+
+    // If models are supported
+    if (ver.hasModels) {
+
+        writefln!"loading models";
+
+        auto count = bin.read!ulong;
+
+        // Load them
+        foreach (i; 0..count) {
+
+            auto model = project.display.loadModel(data);
+            project.objects.registerModel(model);
+
+        }
+
+    }
 
     return project;
 
