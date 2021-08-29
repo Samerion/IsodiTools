@@ -1,6 +1,7 @@
 module isodi.tools.skeleton.construct;
 
 import raylib;
+import core.thread;
 
 import std.file;
 import std.path;
@@ -9,6 +10,7 @@ import std.string;
 import isodi;
 import isodi.resource;
 
+import isodi.tools.exception;
 import isodi.tools.skeleton.utils;
 import isodi.tools.skeleton.structs;
 
@@ -16,7 +18,7 @@ import isodi.tools.skeleton.structs;
 @safe:
 
 
-/// Construct a new skeleton from images.
+/// Construct a new skeleton from images. Must be called in a fiber.
 /// Params:
 ///     pack       = Pack to load the bones into.
 ///     boneImages = Images to create bones from.
@@ -34,7 +36,8 @@ SkeletonNode[] constructSkeleton(Pack pack, const ConstructedBone[] bones) @trus
 
     ];
 
-    // TODO: Ensure each image has the same size
+    assert(Fiber.getThis, "constructSkeleton requires to be ran in a fiber.");
+
     // TODO: Ensure no bone would get overriden
 
     // Load each bone
@@ -65,6 +68,10 @@ SkeletonNode[] constructSkeleton(Pack pack, const ConstructedBone[] bones) @trus
         // Ensure the path exists
         const exportPath = pack.path.buildPath(bone.packPath);
         mkdirRecurse(exportPath.dirName);
+
+        NeedsConfirmException.enforceFibered(!exportPath.exists, format!"File %s already exists. Overwrite?"(
+            exportPath
+        ));
 
         // Output the image
         ExportImage(result, exportPath.toStringz);

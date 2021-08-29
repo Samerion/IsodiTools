@@ -230,27 +230,34 @@ do {
         hframe(
             .layout!"end",
             button("Go back", { root.remove(); }),
-            button("Replace", {
+            button("Replace", () @trusted {
 
-                auto targetPack = project.display.packs[0];
+                import core.thread;
 
-                // Perform the action
-                auto nodes = constructSkeleton(targetPack, bones);
-                model.changeSkeleton(nodes);
+                // Perform the operation in a fiber
+                new Fiber(() @safe {
 
-                // Rebuild the skeleton editor
-                project.objects.skeletonEditor.makeTree();
+                    auto targetPack = project.display.packs[0];
 
-                // Reload resources
-                project.display.reloadResources();
+                    // Perform the action
+                    auto nodes = constructSkeleton(targetPack, bones);
+                    model.changeSkeleton(nodes);
 
-                // Close the modals
-                root.remove();
-                parentModal.remove();
+                    // Rebuild the skeleton editor
+                    project.objects.skeletonEditor.makeTree();
 
-                // Add status bar info
-                project.status.text = format!"Images exported to pack %s"(targetPack.name);
-                project.status.updateSize();
+                    // Reload resources
+                    project.display.reloadResources();
+
+                    // Close the modals
+                    root.remove();
+                    parentModal.remove();
+
+                    // Add status bar info
+                    project.status.text = format!"Images exported to pack %s"(targetPack.name);
+                    project.status.updateSize();
+
+                }).call();
 
             }),
         ),
