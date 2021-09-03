@@ -86,8 +86,8 @@ GluiFrame constructSkeletonWindow(Project project, Model model) {
         button(pickerText, { project.showModal = imagePicker; }),
 
         summaryLabel = label(format!boneCountText(0)),
-        boneEditor = vframe(
-            .layout!"fill",
+        boneEditor = vscrollFrame(
+            .layout!(1, "fill"),
         ),
 
         hframe(

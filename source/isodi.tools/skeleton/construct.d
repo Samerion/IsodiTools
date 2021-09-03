@@ -112,10 +112,8 @@ private Image angleCrop(ref Image image, ConstructedBone bone, Rectangle opaqueP
 /// Get the rectangle covering opaque parts of all angles in the image.
 private Rectangle anglesOpaqueRect(ref Image image, ConstructedBone bone) @trusted {
 
-    import std.math;
-
     // Expected crop of each side
-    auto result = Rectangle(float.nan, float.nan, 0, 0);
+    Rectangle result;
 
     // Check each angle to find how much space each one occupies
     foreach (angle; 0..bone.angles) {
@@ -126,10 +124,28 @@ private Rectangle anglesOpaqueRect(ref Image image, ConstructedBone bone) @trust
         // Find the opaque part
         const border = GetImageAlphaBorder(part, 0);
 
-        if (result.x.isNaN || border.x < result.x) result.x = border.x;
-        if (result.y.isNaN || border.y < result.y) result.y = border.y;
-        if (border.w > result.w) result.w = border.w;
-        if (border.h > result.h) result.h = border.h;
+        if (angle == 0 || border.x < result.x) {
+
+            result.w += angle ? result.x - border.x : 0;
+            result.x = border.x;
+
+        }
+        if (angle == 0 || border.y < result.y) {
+
+            result.h += angle ? result.y - border.y : 0;
+            result.y = border.y;
+
+        }
+        if (border.x + border.w > result.x + result.w) {
+
+            result.w = border.x + border.w - result.x;
+
+        }
+        if (border.y + border.h > result.y + result.h) {
+
+            result.h = border.y + border.h - result.y;
+
+        }
 
     }
 
