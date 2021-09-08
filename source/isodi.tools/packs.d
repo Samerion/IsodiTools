@@ -28,11 +28,12 @@ struct Packs {
 
         Project project;
 
-        // Tab contents
-        GluiFrame packsFrame, tilesFrame, skeletonsFrame;
+        // Tab spaces and contents
+        GluiSpace packsSpace, tilesSpace, skeletonsSpace;
+        GluiSpace packsContent, tilesContent, skeletonsContent;
 
         // Current tab
-        GluiFrame openTabFrame;
+        GluiSpace openTabSpace;
 
     }
 
@@ -42,37 +43,48 @@ struct Packs {
 
         this.project = project;
 
+        const fill = layout!(1, "fill");
+
         // Make the frame
         rootFrame = vframe(
             theme,
-            layout(NodeAlign.start, NodeAlign.fill),
+            layout!("start", "fill"),
 
             // Tab switcher
             hframe(
-                button("Packs", () => switchTab(packsFrame)),
-                button("Tiles", () => switchTab(tilesFrame)),
-                button("Skeletons", () => switchTab(skeletonsFrame)),
+                button("Packs", () => switchTab(packsSpace)),
+                button("Tiles", () => switchTab(tilesSpace)),
+                button("Skeletons", () => switchTab(skeletonsSpace)),
             ),
 
             // Content
-            packsFrame = vframe(),
-            tilesFrame = vframe(),
-            skeletonsFrame = vframe(),
-
+            // onionFrame as a workaround for https://github.com/Samerion/Glui/issues/24
+            onionFrame(fill,
+                packsSpace = packsContent = vscrollFrame(fill),
+                tilesSpace = tilesContent = vscrollFrame(fill),
+                skeletonsSpace = vspace(fill,
+                    skeletonsContent = vscrollFrame(fill),
+                    button(
+                        .layout!"fill",
+                        "Empty skeleton",
+                        () => setModelBrush(null),
+                    ),
+                ),
+            ),
         );
 
         // Set the active tabs
-        openTabFrame = packsFrame;
-        tilesFrame.hide();
-        skeletonsFrame.hide();
+        openTabSpace = packsSpace;
+        tilesSpace.hide();
+        skeletonsSpace.hide();
 
     }
 
     /// Switch to a different tab.
-    void switchTab(GluiFrame newTab) {
+    void switchTab(GluiSpace newTab) {
 
-        openTabFrame.hide();
-        openTabFrame = newTab;
+        openTabSpace.hide();
+        openTabSpace = newTab;
         newTab.show();
         newTab.updateSize();
 
@@ -95,7 +107,7 @@ struct Packs {
 
         // Append
         packList.insertInPlace(index, packs);
-        packsFrame.children.insertInPlace(index, nodes);
+        packsSpace.children.insertInPlace(index, nodes);
 
         reload();
 
@@ -109,20 +121,24 @@ struct Packs {
     }
 
     /// Reload the packs and update the UI.
-    private void reload() {
+    void reload() {
 
+        // Get the pack list
         auto packList = project.display.packs;
+        packList.clearCache();
 
         // Add tiles
-        tilesFrame.children = packList.listCells[]
+        tilesContent.children = packList.listCells[]
             .map!(type => cast(GluiNode) button(type, () => setCellBrush(type)))
             .array;
 
-        // Clear cache
-        packList.clearCache();
+        // Add skeletons
+        skeletonsContent.children = packList.listSkeletons[]
+            .map!(type => cast(GluiNode) button(type, () => setModelBrush(type)))
+            .array;
 
         // Resize the tree
-        packsFrame.updateSize();
+        rootFrame.updateSize();
 
     }
 
@@ -136,6 +152,29 @@ struct Packs {
         cell.color = Color(0xcc, 0xaa, 0xff, 0xee);
 
         project.brush = cell;
+
+    }
+
+    /// Assign a new model as a brush.
+    private void setModelBrush(string skeletonType) {
+
+        import isodi.raylib.model : RaylibModel;
+
+        // Fail if there are no packs
+        if (project.display.packs.length == 0) {
+
+            project.status.text = "Can't create a model, project has no packs!";
+            project.status.updateSize();
+            return;
+
+        }
+
+        // Create the model
+        auto model = new RaylibModel(project.display, skeletonType);
+        model.positionRef.height.depth = 0;
+        model.positionDebug = true;
+
+        project.brush = model;
 
     }
 

@@ -17,6 +17,7 @@ import isodi.raylib.display;
 import isodi.tools.packs;
 import isodi.tools.objects;
 import isodi.tools.options;
+import isodi.tools.skeleton;
 
 
 @safe:
@@ -47,6 +48,9 @@ class Project {
 
     /// Project options.
     ProjectOptions options;
+
+    /// Modal list.
+    GluiSpace modalsSpace;
 
     /// UI for the options modal.
     GluiFrame optionsFrame;
@@ -101,6 +105,8 @@ class Project {
         objects = Objects(this);
         status = label();
 
+        // Modals
+        modalsSpace = onionFrame(.layout!(1, "center"));
         optionsFrame = new ProjectOptionsFrame(this);
 
     }
@@ -129,6 +135,20 @@ class Project {
 
         // Finally, draw the display
         display.draw();
+
+    }
+
+    /// Show a modal in the project window.
+    void showModal(GluiNode modalNode) {
+
+        import std.algorithm;
+
+        assert(!modalsSpace.children.canFind!"a is b"(modalNode), "This modal is already shown");
+
+        modalsSpace.children ~= modalNode;
+        modalsSpace.updateSize();
+        modalNode.toRemove = false;  // TODO: correct this in Glui
+        modalNode.show();
 
     }
 
@@ -228,6 +248,15 @@ class Project {
 
         }
 
+        // Painting models
+        else if (auto model = cast(isodi.Model) _brush) {
+
+            auto newModel = display.addModel(position);
+            newModel.copySkeleton(model);
+            objects.registerModel(newModel);
+
+        }
+
     }
 
     /// Erase objects matching brush type.
@@ -304,8 +333,7 @@ class Project {
 
     }
 
-    // Animation playback instructions for movies.
-    // TODO
+    // TODO Animation playback instructions for movies.
     // auto animationPlan;
 
 }

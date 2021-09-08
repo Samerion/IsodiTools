@@ -17,6 +17,7 @@ import isodi.tools.input;
 import isodi.tools.themes;
 import isodi.tools.project;
 import isodi.tools.open_file;
+import isodi.tools.exception;
 
 
 @safe:
@@ -64,8 +65,13 @@ void main(string[] argv) @trusted {
         // Draw the active project
         tabs.openProject.draw();
 
-        // Draw the UI
-        ui.draw();
+        // Handle failure windows
+        FailureException.handle(tabs.openProject, {
+
+            // Draw the UI
+            ui.draw();
+
+        });
 
         // Process general input
         processInput(ui, tabs);

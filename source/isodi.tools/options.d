@@ -19,6 +19,8 @@ struct ProjectOptions {
 
 }
 
+// TODO: this code could be simplified
+
 class ProjectOptionsFrame : GluiFrame {
 
     Project project;
@@ -42,9 +44,8 @@ class ProjectOptionsFrame : GluiFrame {
 
         // Create the node
         super(
-
-            .theme,
             .layout!(1, "center"),
+            .modalTheme,
 
             label(
                 .layout!"center",
@@ -69,9 +70,9 @@ class ProjectOptionsFrame : GluiFrame {
             ),
 
             button(
-                .layout!(1, "center"),
+                .layout!"end",
                 "Close",
-                { hide(); },
+                { remove(); },
             ),
 
         );

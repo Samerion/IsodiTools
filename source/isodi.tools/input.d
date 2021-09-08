@@ -9,6 +9,7 @@ import std.algorithm;
 import isodi.raylib.camera;
 
 import isodi.tools.tabs;
+import isodi.tools.project;
 import isodi.tools.open_file;
 
 
@@ -56,9 +57,12 @@ void processInput(GluiNode uiRoot, ref Tabs tabs) {
     if (uiRoot.tree.keyboardHandled) return;
 
     // Update the camera
-    tabs.openProject.display.camera.updateCamera(keybinds);
+    project.display.camera.updateCamera(keybinds);
 
-    // Nothing is focused
+    // Process escape key
+    processEscape(project);
+
+    // Other shortcuts
     loop: while (true) {
 
         const getChar = () @trusted => GetCharPressed;
@@ -91,6 +95,20 @@ void processInput(GluiNode uiRoot, ref Tabs tabs) {
             default: break;
 
         }
+
+    }
+
+}
+
+private void processEscape(Project project) @trusted {
+
+    if (!IsKeyReleased(KeyboardKey.KEY_ESCAPE)) return;
+
+    // Modal open
+    if (project.modalsSpace.children.length) {
+
+        // Remove last modal
+        project.modalsSpace.children[$-1].remove();
 
     }
 

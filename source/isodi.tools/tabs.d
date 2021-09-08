@@ -34,8 +34,8 @@ struct Tabs {
         /// Status label.
         GluiLabel* status;
 
-        /// Options dialog.
-        GluiFrame* options;
+        /// Modals for the project.
+        GluiSpace* modals;
 
     }
 
@@ -85,7 +85,7 @@ struct Tabs {
         *frames.palette = project.packs.rootFrame;
         *frames.objects = project.objects.rootFrame;
         *frames.status  = project.status;
-        *frames.options = project.optionsFrame;
+        *frames.modals  = project.modalsSpace;
         frames.palette.updateSize();
 
         // Set the project
